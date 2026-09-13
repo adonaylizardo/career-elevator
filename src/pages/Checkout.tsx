@@ -4,11 +4,15 @@ import { Section } from '../components/layout/Section'
 import { buttonVariants } from '../components/ui/button'
 import { cn } from '../lib/utils'
 
-const paypalLink = import.meta.env.VITE_PAYPAL_LINK as string | undefined
+const DEFAULT_PAYPAL_LINK = 'https://paypal.me/adolizardo/49'
+
+const paypalLink =
+  (import.meta.env.VITE_PAYPAL_LINK as string | undefined)?.trim() ||
+  DEFAULT_PAYPAL_LINK
 const cryptoAddress = import.meta.env.VITE_CRYPTO_ADDRESS as string | undefined
 const cryptoNetwork = import.meta.env.VITE_CRYPTO_NETWORK as string | undefined
 
-const hasPaypal = Boolean(paypalLink?.trim())
+const hasPaypal = Boolean(paypalLink)
 const hasCrypto = Boolean(cryptoAddress?.trim())
 
 export function Checkout() {
@@ -99,10 +103,10 @@ export function Checkout() {
           </Link>
         </div>
 
-        {!hasPaypal && !hasCrypto && (
+        {!hasCrypto && (
           <p className="mt-6 rounded-md border border-border bg-neutral-50 px-4 py-3 text-sm text-muted-foreground">
-            No payment methods are configured yet. This is expected for the
-            scaffold — payment details will be added when available.
+            Crypto payment is not available yet — use PayPal above, or check
+            back when a static USDT address is configured.
           </p>
         )}
       </Section>
