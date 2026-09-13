@@ -1,8 +1,32 @@
 # Career Elevator
 
-Private scaffold for **Career Elevator** — a one-time $49 offer delivering an **Opportunity Sheet** (10–20 matched roles + gap and market notes).
+**A one-time research offer that delivers a curated Opportunity Sheet — 10–20 roles matched to your experience, with gap and market notes.**
 
-> **Do not publish** without Adonay OK. No GitHub Pages, Vercel public deploy, or custom domain setup in this scaffold.
+[![Live Site](https://img.shields.io/badge/Live%20Site-adonaylizardo.github.io%2Fcareer--elevator-2563eb?style=for-the-badge)](https://adonaylizardo.github.io/career-elevator/)
+
+**→ [Open the store](https://adonaylizardo.github.io/career-elevator/)**
+
+## What you get
+
+**Opportunity Sheet** — a hand-built list of 10–20 open roles aligned to your CV and stated goals, plus short notes on where your profile is thin and what the market is asking for right now.
+
+- **Price:** $49 one-time
+- **Delivery:** ~3–5 days after a complete intake
+- **How it works:** manual research by Adonay — not an automated job search engine or application service
+
+## Who it's for
+
+Designers and product people who are actively job hunting and want direction on where to point their CV and portfolio — not another generic job board scroll.
+
+## How the store works (V1)
+
+This repo is the **public storefront and intake flow only**. There is no opportunity-search engine here; sheets are built by hand after purchase.
+
+1. **Landing** — read the offer and what’s included
+2. **Checkout** — pay via PayPal or USDT (TRC20)
+3. **“I’ve paid”** — continue to the intake form
+4. **Intake** — submit your Oracle FULL intake (CV, goals, constraints)
+5. **Fulfillment** — Adonay verifies payment manually and builds your Opportunity Sheet offline
 
 ## Stack
 
@@ -13,11 +37,13 @@ Private scaffold for **Career Elevator** — a one-time $49 offer delivering an 
 
 ## Routes
 
-| Route | Purpose |
-|-------|---------|
-| `/` | Landing page (locked copy) |
-| `/checkout` | PayPal or USDT (TRC20) payment — both work out of the box |
-| `/intake` | Oracle FULL intake form |
+On [GitHub Pages](https://adonaylizardo.github.io/career-elevator/) the app is served under `/career-elevator/`. Locally, routes have no base prefix.
+
+| Local | GitHub Pages | Purpose |
+|-------|--------------|---------|
+| `/` | `/career-elevator/` | Landing page |
+| `/checkout` | `/career-elevator/checkout` | PayPal or USDT (TRC20) payment |
+| `/intake` | `/career-elevator/intake` | Oracle FULL intake form |
 
 ## Local development
 
@@ -52,6 +78,6 @@ PayPal and USDT checkout work out of the box without a `.env` file. Intake falls
 - [`docs/ops-checklist.md`](docs/ops-checklist.md) — paid → intake → draft → QA → send
 - [`docs/delivery-template.md`](docs/delivery-template.md) — Opportunity Sheet structure
 
-## Publishing
+## License & contact
 
-Requires Adonay approval before any public deployment.
+Career Elevator is owned and operated by [Adonay Lizardo](https://github.com/adonaylizardo).
