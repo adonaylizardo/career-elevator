@@ -401,6 +401,10 @@ export function Intake() {
             </div>
 
             <div className="space-y-2">
+              <Label required>Compensation</Label>
+              <p className="text-xs text-muted-foreground">
+                Enter a pay floor or check Pay unpublished OK — one is required.
+              </p>
               <Label htmlFor="pay_floor">Pay floor (USD/year)</Label>
               <Input
                 id="pay_floor"
