@@ -16,7 +16,7 @@ Private scaffold for **Career Elevator** — a one-time $49 offer delivering an 
 | Route | Purpose |
 |-------|---------|
 | `/` | Landing page (locked copy) |
-| `/checkout` | PayPal or crypto payment — env-configured |
+| `/checkout` | PayPal or USDT (TRC20) payment — both work out of the box |
 | `/intake` | Oracle FULL intake form |
 
 ## Local development
@@ -40,12 +40,12 @@ Copy `.env.example` to `.env` and set as needed:
 
 | Variable | Purpose |
 |----------|---------|
-| `VITE_PAYPAL_LINK` | PayPal payment URL |
-| `VITE_CRYPTO_ADDRESS` | Crypto wallet address |
-| `VITE_CRYPTO_NETWORK` | Crypto network label (e.g. Ethereum) |
+| `VITE_PAYPAL_LINK` | PayPal payment URL (defaults to `https://paypal.me/adolizardo/49`) |
+| `VITE_CRYPTO_ADDRESS` | USDT deposit address (defaults to Tron TRC20 address) |
+| `VITE_CRYPTO_NETWORK` | Network label (defaults to `USDT on TRX (Tron) — USDT-TRC20`) |
 | `VITE_FORM_ENDPOINT` | Intake form POST endpoint |
 
-When unset, checkout shows honest "not configured yet" states. Intake falls back to JSON download.
+PayPal and USDT checkout work out of the box without a `.env` file. Intake falls back to JSON download when `VITE_FORM_ENDPOINT` is unset.
 
 ## Docs
 
