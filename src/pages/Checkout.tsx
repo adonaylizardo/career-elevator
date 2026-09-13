@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageLayout } from '../components/layout/PageLayout'
 import { Section } from '../components/layout/Section'
@@ -5,17 +6,31 @@ import { buttonVariants } from '../components/ui/button'
 import { cn } from '../lib/utils'
 
 const DEFAULT_PAYPAL_LINK = 'https://paypal.me/adolizardo/49'
+const DEFAULT_CRYPTO_ADDRESS = 'TD9JU44xuykaBV3W7ofJpmc6iRnocFKnCD'
+const DEFAULT_CRYPTO_NETWORK = 'USDT on TRX (Tron) — USDT-TRC20'
 
 const paypalLink =
   (import.meta.env.VITE_PAYPAL_LINK as string | undefined)?.trim() ||
   DEFAULT_PAYPAL_LINK
-const cryptoAddress = import.meta.env.VITE_CRYPTO_ADDRESS as string | undefined
-const cryptoNetwork = import.meta.env.VITE_CRYPTO_NETWORK as string | undefined
+const cryptoAddress =
+  (import.meta.env.VITE_CRYPTO_ADDRESS as string | undefined)?.trim() ||
+  DEFAULT_CRYPTO_ADDRESS
+const cryptoNetwork =
+  (import.meta.env.VITE_CRYPTO_NETWORK as string | undefined)?.trim() ||
+  DEFAULT_CRYPTO_NETWORK
 
 const hasPaypal = Boolean(paypalLink)
-const hasCrypto = Boolean(cryptoAddress?.trim())
+const hasCrypto = Boolean(cryptoAddress)
 
 export function Checkout() {
+  const [addressCopied, setAddressCopied] = useState(false)
+
+  async function copyAddress() {
+    await navigator.clipboard.writeText(cryptoAddress)
+    setAddressCopied(true)
+    setTimeout(() => setAddressCopied(false), 2000)
+  }
+
   return (
     <PageLayout>
       <Section className="pt-16 sm:pt-24">
@@ -53,23 +68,44 @@ export function Checkout() {
 
           {/* Crypto */}
           <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg font-semibold">Crypto</h2>
+            <h2 className="text-lg font-semibold">Crypto (USDT)</h2>
             {hasCrypto ? (
-              <div className="mt-4 space-y-2">
-                {cryptoNetwork && (
-                  <p className="text-sm text-muted-foreground">
-                    Network:{' '}
-                    <span className="font-medium text-foreground">
-                      {cryptoNetwork}
-                    </span>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Network</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {cryptoNetwork}
                   </p>
-                )}
-                <p className="text-sm text-muted-foreground">Address:</p>
-                <code className="block break-all rounded-md border border-border bg-neutral-50 px-3 py-2 text-sm">
-                  {cryptoAddress}
-                </code>
+                  <p className="mt-2 text-sm font-medium text-destructive">
+                    Send only on this network. Wrong network = loss of funds.
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Amount</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    $49 / 49 USDT (display only — payment is not auto-verified)
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Address</p>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <code className="block flex-1 break-all rounded-md border border-border bg-neutral-50 px-3 py-2 text-sm">
+                      {cryptoAddress}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={copyAddress}
+                      className={cn(
+                        buttonVariants({ variant: 'outline' }),
+                        'shrink-0'
+                      )}
+                    >
+                      {addressCopied ? 'Copied' : 'Copy address'}
+                    </button>
+                  </div>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Send $49 equivalent, then click "I've paid" below.
+                  Send 49 USDT, then click &ldquo;I&apos;ve paid&rdquo; below.
                 </p>
               </div>
             ) : (
@@ -103,12 +139,6 @@ export function Checkout() {
           </Link>
         </div>
 
-        {!hasCrypto && (
-          <p className="mt-6 rounded-md border border-border bg-neutral-50 px-4 py-3 text-sm text-muted-foreground">
-            Crypto payment is not available yet — use PayPal above, or check
-            back when a static USDT address is configured.
-          </p>
-        )}
       </Section>
     </PageLayout>
   )
