@@ -33,19 +33,21 @@ export function Checkout() {
 
   return (
     <PageLayout>
-      <Section className="pt-16 sm:pt-24">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Checkout</h1>
-        <p className="mt-4 text-muted-foreground">
+      <Section className="pt-12 sm:pt-20" wide label="Checkout">
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">
+          Checkout
+        </h1>
+        <p className="mt-4 max-w-2xl text-muted-foreground">
           Career Elevator — $49 one-time. After payment, complete the intake
           form so we can build your Opportunity Sheet.
         </p>
 
-        <div className="mt-10 space-y-8">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {/* PayPal */}
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg font-semibold">PayPal</h2>
+          <div className="card-surface p-6 sm:p-8">
+            <h2 className="font-display text-xl font-bold">PayPal</h2>
             {hasPaypal ? (
-              <div className="mt-4">
+              <div className="mt-6">
                 <a
                   href={paypalLink}
                   target="_blank"
@@ -56,9 +58,9 @@ export function Checkout() {
                 </a>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground">
                 PayPal payment link is not configured yet. Set{' '}
-                <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">
+                <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 font-mono text-xs">
                   VITE_PAYPAL_LINK
                 </code>{' '}
                 in your environment to enable this option.
@@ -67,29 +69,35 @@ export function Checkout() {
           </div>
 
           {/* Crypto */}
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg font-semibold">Crypto (USDT)</h2>
+          <div className="card-surface p-6 sm:p-8">
+            <h2 className="font-display text-xl font-bold">Crypto (USDT)</h2>
             {hasCrypto ? (
-              <div className="mt-4 space-y-4">
+              <div className="mt-6 space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Network</p>
+                  <p className="font-mono-label text-[10px] text-muted">
+                    Network
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {cryptoNetwork}
                   </p>
-                  <p className="mt-2 text-sm font-medium text-destructive">
+                  <p className="mt-2 text-sm font-medium text-pink">
                     Send only on this network. Wrong network = loss of funds.
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Amount</p>
+                  <p className="font-mono-label text-[10px] text-muted">
+                    Amount
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     $49 / 49 USDT (display only — payment is not auto-verified)
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Address</p>
+                  <p className="font-mono-label text-[10px] text-muted">
+                    Address
+                  </p>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
-                    <code className="block flex-1 break-all rounded-md border border-border bg-neutral-50 px-3 py-2 text-sm">
+                    <code className="block flex-1 break-all rounded-xl border border-border bg-neutral-50/80 px-3 py-2.5 text-sm">
                       {cryptoAddress}
                     </code>
                     <button
@@ -97,7 +105,7 @@ export function Checkout() {
                       onClick={copyAddress}
                       className={cn(
                         buttonVariants({ variant: 'outline' }),
-                        'shrink-0'
+                        'shrink-0',
                       )}
                     >
                       {addressCopied ? 'Copied' : 'Copy address'}
@@ -109,13 +117,13 @@ export function Checkout() {
                 </p>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground">
                 Crypto payment is not configured yet. Set{' '}
-                <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">
+                <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 font-mono text-xs">
                   VITE_CRYPTO_ADDRESS
                 </code>{' '}
                 and{' '}
-                <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs">
+                <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 font-mono text-xs">
                   VITE_CRYPTO_NETWORK
                 </code>{' '}
                 in your environment to enable this option.
@@ -127,7 +135,7 @@ export function Checkout() {
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
           <Link
             to="/intake"
-            className={cn(buttonVariants({ variant: 'default' }))}
+            className={cn(buttonVariants({ variant: 'default', size: 'lg' }))}
           >
             I've paid — continue to intake
           </Link>
@@ -138,7 +146,6 @@ export function Checkout() {
             Back to landing
           </Link>
         </div>
-
       </Section>
     </PageLayout>
   )

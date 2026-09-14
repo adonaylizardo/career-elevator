@@ -180,19 +180,21 @@ export function Intake() {
   if (submitted) {
     return (
       <PageLayout>
-        <Section className="pt-16 sm:pt-24">
-          <h1 className="text-2xl font-semibold">Intake received</h1>
-          <p className="mt-4 text-muted-foreground">
-            {formEndpoint?.trim()
-              ? 'Your intake has been submitted. Your Opportunity Sheet will be delivered in 3–5 days after review.'
-              : 'Your intake has been downloaded as JSON. Configure VITE_FORM_ENDPOINT to enable direct submission.'}
-          </p>
-          <Link
-            to="/"
-            className={cn(buttonVariants({ variant: 'outline' }), 'mt-8 inline-flex')}
-          >
-            Back to landing
-          </Link>
+        <Section className="pt-12 sm:pt-20" wide>
+          <div className="card-surface-lg max-w-2xl p-8 sm:p-10">
+            <h1 className="font-display text-3xl font-bold">Intake received</h1>
+            <p className="mt-4 text-muted-foreground">
+              {formEndpoint?.trim()
+                ? 'Your intake has been submitted. Your Opportunity Sheet will be delivered in 3–5 days after review.'
+                : 'Your intake has been downloaded as JSON. Configure VITE_FORM_ENDPOINT to enable direct submission.'}
+            </p>
+            <Link
+              to="/"
+              className={cn(buttonVariants({ variant: 'outline' }), 'mt-8 inline-flex')}
+            >
+              Back to landing
+            </Link>
+          </div>
         </Section>
       </PageLayout>
     )
@@ -200,17 +202,20 @@ export function Intake() {
 
   return (
     <PageLayout>
-      <Section className="pt-16 sm:pt-24">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Intake form</h1>
-        <p className="mt-4 text-muted-foreground">
+      <Section className="pt-12 sm:pt-20" wide label="Intake">
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">
+          Intake form
+        </h1>
+        <p className="mt-4 max-w-2xl text-muted-foreground">
           Complete this form after payment. Fields marked with * are required.
           Optional fields are collapsed below — defaults apply if skipped.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-10 space-y-8">
+        <form onSubmit={handleSubmit} className="mt-10">
+          <div className="card-surface-lg space-y-8 p-6 sm:p-10">
           {/* Required fields */}
           <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Required</h2>
+            <h2 className="font-display text-xl font-bold">Required</h2>
 
             <div className="space-y-2">
               <Label htmlFor="full_name" required>
@@ -316,7 +321,7 @@ export function Intake() {
                 id="location_mode"
                 value={form.location_mode}
                 onChange={(e) => updateField('location_mode', e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                className="flex h-11 w-full rounded-xl border border-border bg-neutral-50/80 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink/30"
                 required
               >
                 <option value="remote-only">Remote only</option>
@@ -426,14 +431,14 @@ export function Intake() {
           </div>
 
           {/* Optional fields — collapsed */}
-          <div className="border-t border-border pt-8">
+          <div className="border-t border-border/60 pt-8">
             <button
               type="button"
               onClick={() => setShowOptional(!showOptional)}
-              className="flex w-full items-center justify-between text-left text-lg font-semibold"
+              className="flex w-full items-center justify-between text-left font-display text-xl font-bold"
             >
               Optional fields
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="font-sans text-sm font-normal text-muted-foreground">
                 {showOptional ? 'Hide' : 'Show'} — defaults apply if skipped
               </span>
             </button>
@@ -485,7 +490,7 @@ export function Intake() {
                     onChange={(e) =>
                       updateField('employment_type', e.target.value)
                     }
-                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-xl border border-border bg-neutral-50/80 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink/30"
                   >
                     <option value="FTE">FTE (default)</option>
                     <option value="contract">Contract</option>
@@ -556,7 +561,7 @@ export function Intake() {
                     onChange={(e) =>
                       updateField('english_level', e.target.value)
                     }
-                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-xl border border-border bg-neutral-50/80 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink/30"
                   >
                     <option value="">Not specified</option>
                     <option value="native">Native</option>
@@ -570,12 +575,12 @@ export function Intake() {
           </div>
 
           {error && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {error}
             </p>
           )}
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 border-t border-border/60 pt-8 sm:flex-row sm:items-center">
             <button
               type="submit"
               disabled={loading}
@@ -589,6 +594,7 @@ export function Intake() {
             >
               Back to checkout
             </Link>
+          </div>
           </div>
         </form>
       </Section>

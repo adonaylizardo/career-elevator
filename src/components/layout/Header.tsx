@@ -4,13 +4,18 @@ import { cn } from '../../lib/utils'
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-8">
         <Link
           to="/"
-          className="text-sm font-semibold tracking-tight text-foreground"
+          className="flex items-center gap-2.5 text-foreground transition-opacity hover:opacity-80"
         >
-          Career Elevator
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-sm font-bold text-background">
+            CE
+          </span>
+          <span className="hidden font-display text-sm font-semibold tracking-tight sm:inline">
+            Career Elevator
+          </span>
         </Link>
         <Link
           to="/checkout"
