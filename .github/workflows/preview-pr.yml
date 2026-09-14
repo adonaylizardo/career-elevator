@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
   pull-requests: write
 
 concurrency:
@@ -17,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  preview:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,47 +38,12 @@ jobs:
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-      - name: Upload backup artifact
+      - name: Upload preview artifact
         uses: actions/upload-artifact@v4
         with:
           name: preview-dist-pr-${{ github.event.pull_request.number }}
           path: dist
           retention-days: 14
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
-      deploy_ok: ${{ steps.deployment.outcome == 'success' }}
-    environment:
-      name: pr-preview
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy preview
-        id: deployment
-        continue-on-error: true
-        uses: actions/deploy-pages@v4
-
-  surge:
-    needs: build
-    runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.surge.outputs.url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download build
-        uses: actions/download-artifact@v4
-        with:
-          name: preview-dist-pr-${{ github.event.pull_request.number }}
-          path: dist
 
       - name: Deploy to Surge (optional)
         id: surge
@@ -96,40 +59,24 @@ jobs:
           npx surge ./dist "$DOMAIN" --token "$SURGE_TOKEN"
           echo "url=https://${DOMAIN}" >> "$GITHUB_OUTPUT"
 
-  comment:
-    needs: [deploy, surge]
-    runs-on: ubuntu-latest
-    if: always() && github.event_name == 'pull_request'
-    steps:
       - name: Comment preview links on PR
         uses: actions/github-script@v7
         env:
-          PAGES_URL: ${{ needs.deploy.outputs.page_url }}
-          PAGES_OK: ${{ needs.deploy.outputs.deploy_ok }}
-          SURGE_URL: ${{ needs.surge.outputs.url }}
+          SURGE_URL: ${{ steps.surge.outputs.url }}
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const branch = context.payload.pull_request.head.ref;
             const stackblitz = `https://stackblitz.com/github/adonaylizardo/career-elevator/tree/${branch}`;
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const pagesUrl = process.env.PAGES_URL;
-            const pagesOk = process.env.PAGES_OK === 'true';
             const surgeUrl = process.env.SURGE_URL;
             const marker = '<!-- career-elevator-preview-comment -->';
 
-            let pagesRow;
-            if (pagesOk && pagesUrl) {
-              pagesRow = `| **GitHub Pages preview** | ${pagesUrl} (built with \`VITE_BASE=/\`) |`;
-            } else {
-              pagesRow = `| **GitHub Pages preview** | Blocked or unavailable — use StackBlitz or Surge below |`;
-            }
-
             let surgeRow;
             if (surgeUrl) {
-              surgeRow = `| **Surge preview** | ${surgeUrl} |`;
+              surgeRow = `| **Public preview (Surge)** | ${surgeUrl} — built with \`VITE_BASE=/\` |`;
             } else {
-              surgeRow = `| **Surge preview** | Add \`SURGE_TOKEN\` secret for \`career-elevator-pr-${prNumber}.surge.sh\` |`;
+              surgeRow = `| **Public preview (Surge)** | Add \`SURGE_TOKEN\` repo secret to enable \`career-elevator-pr-${prNumber}.surge.sh\` |`;
             }
 
             const body = `${marker}
@@ -137,10 +84,11 @@ jobs:
 
             | Option | Link |
             | --- | --- |
-            ${pagesRow}
             ${surgeRow}
             | **StackBlitz** | [Open in StackBlitz](${stackblitz}) — set env \`VITE_BASE=/\` if assets 404, then \`npm install && npm run dev\` |
             | **Artifact** | [Workflow run](${runUrl}) → Artifacts → \`preview-dist-pr-${prNumber}\` |
+
+            Previews use \`VITE_BASE=/\` and do **not** touch production.
 
             **Live production (unchanged):** https://adonaylizardo.github.io/career-elevator/
             `;
