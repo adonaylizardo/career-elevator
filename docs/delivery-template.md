@@ -1,6 +1,6 @@
 # Opportunity Sheet — Delivery Template
 
-Use this template when building a customer's Opportunity Sheet. Fill in each section from research — do not invent claims about the customer or the market.
+Ally uses this template when drafting a paying client's Opportunity Sheet. Fill in each section from research — do not invent claims about the customer or the market.
 
 ---
 

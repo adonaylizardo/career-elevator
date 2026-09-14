@@ -26,7 +26,7 @@ This repo is the **public storefront and intake flow only**. There is no opportu
 2. **Checkout** — pay via PayPal or USDT (TRC20)
 3. **“I’ve paid”** — continue to the intake form
 4. **Intake** — submit your Oracle FULL intake (CV, goals, constraints)
-5. **Fulfillment** — Adonay verifies payment manually and builds your Opportunity Sheet offline
+5. **Fulfillment** — Ally drafts your Opportunity Sheet; Adonay verifies payment and QA before send
 
 ## Stack
 
