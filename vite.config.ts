@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/career-elevator/',
+  base: process.env.VITE_BASE ?? '/career-elevator/',
   plugins: [react(), tailwindcss()],
 })
