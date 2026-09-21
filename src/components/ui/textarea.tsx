@@ -1,9 +1,30 @@
 import { cn } from '../../lib/utils'
 
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  variant?: 'default' | 'intake'
+  hasError?: boolean
+}
 
-export function Textarea({ className, ...props }: TextareaProps) {
+export function Textarea({
+  className,
+  variant = 'default',
+  hasError,
+  ...props
+}: TextareaProps) {
+  if (variant === 'intake') {
+    return (
+      <textarea
+        className={cn(
+          'intake-field min-h-[96px] resize-y',
+          hasError && 'intake-field-error',
+          className,
+        )}
+        {...props}
+      />
+    )
+  }
+
   return (
     <textarea
       className={cn(

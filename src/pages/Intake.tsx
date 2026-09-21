@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { IntakeField } from '../components/intake/IntakeField'
+import { IntakeSelect } from '../components/intake/IntakeSelect'
+import { IntakeStepHeader } from '../components/intake/IntakeStepHeader'
 import { PageLayout } from '../components/layout/PageLayout'
-import { Section } from '../components/layout/Section'
-import { buttonVariants } from '../components/ui/button'
 import { Checkbox } from '../components/ui/checkbox'
 import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
 import { cn } from '../lib/utils'
 
@@ -36,7 +36,41 @@ interface IntakeData {
   english_level: string
 }
 
+type FieldKey = keyof IntakeData
+
+interface ValidationResult {
+  summary: string
+  fields: FieldKey[]
+}
+
 const formEndpoint = import.meta.env.VITE_FORM_ENDPOINT as string | undefined
+
+const INITIAL_FORM: IntakeData = {
+  full_name: '',
+  email: '',
+  cv_url: '',
+  portfolio_url: '',
+  linkedin_url: '',
+  target_titles: ['', '', ''],
+  work_from_country: '',
+  location_mode: 'remote-only',
+  languages: '',
+  work_auth: '',
+  constraints: '',
+  timeline: '',
+  goal_one_liner: '',
+  pay_floor: '',
+  pay_unpublished_ok: false,
+  city: '',
+  industries_prefer: ['', '', ''],
+  industries_avoid: ['', '', ''],
+  employment_type: 'FTE',
+  already_applied: '',
+  notice_period: '',
+  overlap_hours: '',
+  companies_like: ['', '', ''],
+  english_level: '',
+}
 
 function downloadJson(data: IntakeData) {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -50,44 +84,53 @@ function downloadJson(data: IntakeData) {
   URL.revokeObjectURL(url)
 }
 
+function isEmailIncomplete(email: string): boolean {
+  const trimmed = email.trim()
+  if (!trimmed) return true
+  return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+}
+
+function IntakePanel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto w-full max-w-[800px] rounded-[32px] bg-card px-6 py-8 lg:rounded-[48px] lg:px-12 lg:py-12">
+      {children}
+    </div>
+  )
+}
+
 export function Intake() {
   const [showOptional, setShowOptional] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Set<FieldKey>>(new Set())
   const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState<IntakeData>(INITIAL_FORM)
 
-  const [form, setForm] = useState<IntakeData>({
-    full_name: '',
-    email: '',
-    cv_url: '',
-    portfolio_url: '',
-    linkedin_url: '',
-    target_titles: ['', '', ''],
-    work_from_country: '',
-    location_mode: 'remote-only',
-    languages: '',
-    work_auth: '',
-    constraints: '',
-    timeline: '',
-    goal_one_liner: '',
-    pay_floor: '',
-    pay_unpublished_ok: false,
-    city: '',
-    industries_prefer: ['', '', ''],
-    industries_avoid: ['', '', ''],
-    employment_type: 'FTE',
-    already_applied: '',
-    notice_period: '',
-    overlap_hours: '',
-    companies_like: ['', '', ''],
-    english_level: '',
-  })
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    setShowOptional(mq.matches)
+    function onChange(e: MediaQueryListEvent) {
+      setShowOptional(e.matches)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
-  function updateField<K extends keyof IntakeData>(
-    key: K,
-    value: IntakeData[K],
-  ) {
+  function clearFieldError(key: FieldKey) {
+    setFieldErrors((prev) => {
+      if (!prev.has(key)) return prev
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+  }
+
+  function updateField<K extends FieldKey>(key: K, value: IntakeData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    clearFieldError(key)
+    if (key === 'pay_floor' || key === 'pay_unpublished_ok') {
+      clearFieldError('pay_floor')
+    }
   }
 
   function updateArrayField(
@@ -100,33 +143,48 @@ export function Intake() {
       arr[index] = value
       return { ...prev, [key]: arr }
     })
+    clearFieldError(key)
   }
 
-  function validate(): string | null {
-    if (!form.full_name.trim()) return 'Full name is required.'
-    if (!form.email.trim()) return 'Email is required.'
-    if (!form.cv_url.trim()) return 'CV URL is required.'
-    if (!form.portfolio_url.trim()) return 'Portfolio URL is required.'
-    if (!form.linkedin_url.trim()) return 'LinkedIn URL is required.'
+  function fieldHasError(key: FieldKey): boolean {
+    return fieldErrors.has(key)
+  }
+
+  function validate(): ValidationResult | null {
+    const fields: FieldKey[] = []
+
+    if (!form.full_name.trim()) fields.push('full_name')
+    if (isEmailIncomplete(form.email)) fields.push('email')
+    if (!form.cv_url.trim()) fields.push('cv_url')
+    if (!form.portfolio_url.trim()) fields.push('portfolio_url')
+    if (!form.linkedin_url.trim()) fields.push('linkedin_url')
+
     const titles = form.target_titles.filter((t) => t.trim())
-    if (titles.length === 0)
-      return 'At least one target title is required (max 3).'
-    if (titles.length > 3) return 'Maximum 3 target titles allowed.'
-    if (!form.work_from_country.trim())
-      return 'Work-from country is required.'
-    if (!form.location_mode.trim()) return 'Location mode is required.'
-    if (!form.languages.trim()) return 'Languages are required.'
-    if (!form.work_auth.trim()) return 'Work authorization is required.'
-    if (!form.constraints.trim()) return 'Constraints are required.'
-    if (form.constraints.length > 400)
-      return 'Constraints must be 400 characters or fewer.'
-    if (!form.timeline.trim()) return 'Timeline is required.'
-    if (!form.goal_one_liner.trim()) return 'Goal one-liner is required.'
-    if (form.goal_one_liner.length > 280)
-      return 'Goal one-liner must be 280 characters or fewer.'
-    if (!form.pay_floor.trim() && !form.pay_unpublished_ok)
-      return 'Provide a pay floor or check "Pay unpublished OK".'
-    return null
+    if (titles.length === 0 || titles.length > 3) fields.push('target_titles')
+
+    if (!form.work_from_country.trim()) fields.push('work_from_country')
+    if (!form.location_mode.trim()) fields.push('location_mode')
+    if (!form.languages.trim()) fields.push('languages')
+    if (!form.work_auth.trim()) fields.push('work_auth')
+    if (!form.constraints.trim() || form.constraints.length > 400) {
+      fields.push('constraints')
+    }
+    if (!form.timeline.trim()) fields.push('timeline')
+    if (!form.goal_one_liner.trim() || form.goal_one_liner.length > 280) {
+      fields.push('goal_one_liner')
+    }
+    if (!form.pay_floor.trim() && !form.pay_unpublished_ok) {
+      fields.push('pay_floor')
+    }
+
+    if (fields.length === 0) return null
+
+    let summary = 'Please fix the highlighted fields.'
+    if (fields.includes('email')) {
+      summary += ' Email looks incomplete.'
+    }
+
+    return { summary, fields }
   }
 
   function buildPayload(): IntakeData {
@@ -142,12 +200,15 @@ export function Intake() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    const validationError = validate()
-    if (validationError) {
-      setError(validationError)
+
+    const validation = validate()
+    if (validation) {
+      setFieldErrors(new Set(validation.fields))
+      setError(validation.summary)
       return
     }
 
+    setFieldErrors(new Set())
     setLoading(true)
     const payload = buildPayload()
 
@@ -180,418 +241,433 @@ export function Intake() {
   if (submitted) {
     return (
       <PageLayout>
-        <Section className="pt-16 sm:pt-24">
-          <h1 className="text-2xl font-semibold">Intake received</h1>
-          <p className="mt-4 text-muted-foreground">
-            {formEndpoint?.trim()
-              ? 'Your intake has been submitted. Your Opportunity Sheet will be delivered in 3–5 days after review.'
-              : 'Your intake has been downloaded as JSON. Configure VITE_FORM_ENDPOINT to enable direct submission.'}
-          </p>
-          <Link
-            to="/"
-            className={cn(buttonVariants({ variant: 'outline' }), 'mt-8 inline-flex')}
-          >
-            Back to landing
-          </Link>
-        </Section>
+        <div className="bg-background px-5 py-10 lg:px-20 lg:py-16">
+          <IntakePanel>
+            <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
+              Intake received
+            </h1>
+            <p className="text-body-muted mt-4">
+              {formEndpoint?.trim()
+                ? 'Your intake has been submitted. Your Opportunity Sheet will be delivered in 3–5 days after review.'
+                : 'Your intake has been downloaded as JSON. Configure VITE_FORM_ENDPOINT to enable direct submission.'}
+            </p>
+            <Link
+              to="/"
+              className="intake-submit mt-8 inline-flex no-underline"
+            >
+              Back to landing
+            </Link>
+          </IntakePanel>
+        </div>
       </PageLayout>
     )
   }
 
   return (
     <PageLayout>
-      <Section className="pt-16 sm:pt-24">
-        <h1 className="font-body text-2xl font-medium sm:text-3xl">Intake form</h1>
-        <p className="text-body-muted mt-4">
-          Complete this form after payment. Fields marked with * are required.
-          Optional fields are collapsed below — defaults apply if skipped.
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-10 space-y-8">
-          {/* Required fields */}
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">Required</h2>
-
-            <div className="space-y-2">
-              <Label htmlFor="full_name" required>
-                Full name
-              </Label>
-              <Input
-                id="full_name"
-                value={form.full_name}
-                onChange={(e) => updateField('full_name', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" required>
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cv_url" required>
-                CV URL
-              </Label>
-              <Input
-                id="cv_url"
-                type="url"
-                placeholder="https://..."
-                value={form.cv_url}
-                onChange={(e) => updateField('cv_url', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="portfolio_url" required>
-                Portfolio URL
-              </Label>
-              <Input
-                id="portfolio_url"
-                type="url"
-                placeholder="https://..."
-                value={form.portfolio_url}
-                onChange={(e) => updateField('portfolio_url', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="linkedin_url" required>
-                LinkedIn URL
-              </Label>
-              <Input
-                id="linkedin_url"
-                type="url"
-                placeholder="https://linkedin.com/in/..."
-                value={form.linkedin_url}
-                onChange={(e) => updateField('linkedin_url', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label required>Target titles (max 3)</Label>
-              {[0, 1, 2].map((i) => (
-                <Input
-                  key={i}
-                  placeholder={`Title ${i + 1}`}
-                  value={form.target_titles[i]}
-                  onChange={(e) =>
-                    updateArrayField('target_titles', i, e.target.value)
-                  }
-                />
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="work_from_country" required>
-                Work-from country
-              </Label>
-              <Input
-                id="work_from_country"
-                placeholder="e.g. Spain, United States"
-                value={form.work_from_country}
-                onChange={(e) =>
-                  updateField('work_from_country', e.target.value)
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location_mode" required>
-                Location mode
-              </Label>
-              <select
-                id="location_mode"
-                value={form.location_mode}
-                onChange={(e) => updateField('location_mode', e.target.value)}
-                className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
-                required
-              >
-                <option value="remote-only">Remote only</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="onsite">On-site</option>
-                <option value="remote-or-hybrid">Remote or hybrid</option>
-                <option value="open">Open to any</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="languages" required>
-                Languages
-              </Label>
-              <Input
-                id="languages"
-                placeholder="e.g. English (fluent), Spanish (native)"
-                value={form.languages}
-                onChange={(e) => updateField('languages', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="work_auth" required>
-                Work authorization
-              </Label>
-              <Textarea
-                id="work_auth"
-                placeholder="Visa status, right to work, sponsorship needs..."
-                value={form.work_auth}
-                onChange={(e) => updateField('work_auth', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="constraints" required>
-                Constraints (max 400 chars)
-              </Label>
-              <Textarea
-                id="constraints"
-                maxLength={400}
-                placeholder="What you'd rather avoid — industries, company types, dealbreakers..."
-                value={form.constraints}
-                onChange={(e) => updateField('constraints', e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted">
-                {form.constraints.length}/400
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="timeline" required>
-                Timeline
-              </Label>
-              <Input
-                id="timeline"
-                placeholder="e.g. Available immediately, 4-week notice"
-                value={form.timeline}
-                onChange={(e) => updateField('timeline', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="goal_one_liner" required>
-                Goal one-liner (max 280 chars)
-              </Label>
-              <Textarea
-                id="goal_one_liner"
-                maxLength={280}
-                placeholder="What you want next, in one sentence..."
-                value={form.goal_one_liner}
-                onChange={(e) => updateField('goal_one_liner', e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted">
-                {form.goal_one_liner.length}/280
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label required>Compensation</Label>
-              <p className="text-xs text-muted-foreground">
-                Enter a pay floor or check Pay unpublished OK — one is required.
-              </p>
-              <Label htmlFor="pay_floor">Pay floor (USD/year)</Label>
-              <Input
-                id="pay_floor"
-                type="text"
-                placeholder="e.g. 75000"
-                value={form.pay_floor}
-                onChange={(e) => updateField('pay_floor', e.target.value)}
-              />
-              <Checkbox
-                id="pay_unpublished_ok"
-                name="pay_unpublished_ok"
-                label="Pay unpublished OK — I prefer not to share a number"
-                checked={form.pay_unpublished_ok}
-                onChange={(e) =>
-                  updateField('pay_unpublished_ok', e.target.checked)
-                }
-              />
-            </div>
-          </div>
-
-          {/* Optional fields — collapsed */}
-          <div className="border-t border-border pt-8">
-            <button
-              type="button"
-              onClick={() => setShowOptional(!showOptional)}
-              className="flex w-full items-center justify-between text-left text-lg font-semibold"
-            >
-              Optional fields
-              <span className="text-sm font-normal text-muted-foreground">
-                {showOptional ? 'Hide' : 'Show'} — defaults apply if skipped
-              </span>
-            </button>
-
-            {showOptional && (
-              <div className="mt-6 space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    value={form.city}
-                    onChange={(e) => updateField('city', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Industries prefer (max 3)</Label>
-                  {[0, 1, 2].map((i) => (
-                    <Input
-                      key={i}
-                      placeholder={`Industry ${i + 1}`}
-                      value={form.industries_prefer[i]}
-                      onChange={(e) =>
-                        updateArrayField('industries_prefer', i, e.target.value)
-                      }
-                    />
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Industries avoid (max 3)</Label>
-                  {[0, 1, 2].map((i) => (
-                    <Input
-                      key={i}
-                      placeholder={`Industry ${i + 1}`}
-                      value={form.industries_avoid[i]}
-                      onChange={(e) =>
-                        updateArrayField('industries_avoid', i, e.target.value)
-                      }
-                    />
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="employment_type">Employment type</Label>
-                  <select
-                    id="employment_type"
-                    value={form.employment_type}
-                    onChange={(e) =>
-                      updateField('employment_type', e.target.value)
-                    }
-                    className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
-                  >
-                    <option value="FTE">FTE (default)</option>
-                    <option value="contract">Contract</option>
-                    <option value="freelance">Freelance</option>
-                    <option value="open">Open to any</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="already_applied">
-                    Already applied (companies/roles)
-                  </Label>
-                  <Textarea
-                    id="already_applied"
-                    placeholder="Roles or companies you've already applied to..."
-                    value={form.already_applied}
-                    onChange={(e) =>
-                      updateField('already_applied', e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notice_period">Notice period</Label>
-                  <Input
-                    id="notice_period"
-                    placeholder="e.g. 2 weeks, 1 month"
-                    value={form.notice_period}
-                    onChange={(e) =>
-                      updateField('notice_period', e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="overlap_hours">
-                    Overlap hours (timezone)
-                  </Label>
-                  <Input
-                    id="overlap_hours"
-                    placeholder="e.g. 4+ hours with US Eastern"
-                    value={form.overlap_hours}
-                    onChange={(e) =>
-                      updateField('overlap_hours', e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Companies like (max 3)</Label>
-                  {[0, 1, 2].map((i) => (
-                    <Input
-                      key={i}
-                      placeholder={`Company ${i + 1}`}
-                      value={form.companies_like[i]}
-                      onChange={(e) =>
-                        updateArrayField('companies_like', i, e.target.value)
-                      }
-                    />
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="english_level">English level</Label>
-                  <select
-                    id="english_level"
-                    value={form.english_level}
-                    onChange={(e) =>
-                      updateField('english_level', e.target.value)
-                    }
-                    className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
-                  >
-                    <option value="">Not specified</option>
-                    <option value="native">Native</option>
-                    <option value="fluent">Fluent</option>
-                    <option value="professional">Professional</option>
-                    <option value="conversational">Conversational</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="bg-background px-5 py-10 lg:px-20 lg:py-16">
+        <IntakePanel>
+          <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
+            Intake form
+          </h1>
+          <p className="text-body-muted mt-4 text-[15px] leading-[1.35] lg:text-[16px]">
+            Complete this form after payment. Fields marked with * are required.
+            Optional fields are collapsed below — defaults apply if skipped.
+          </p>
 
           {error && (
-            <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div
+              className="mt-6 rounded-lg border border-accent bg-error-fill px-4 py-3 font-body text-[14px] leading-[1.35] text-foreground"
+              role="alert"
+            >
               {error}
-            </p>
+            </div>
           )}
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <button
-              type="submit"
-              disabled={loading}
-              className={cn(buttonVariants({ variant: 'default', size: 'lg' }))}
+          <form onSubmit={handleSubmit} className="mt-8">
+            <IntakeStepHeader step={1} title="Required" />
+
+            <div className="flex flex-col gap-4">
+              <IntakeField label="Full name" htmlFor="full_name" required>
+                <Input
+                  id="full_name"
+                  variant="intake"
+                  placeholder="Your full name"
+                  value={form.full_name}
+                  hasError={fieldHasError('full_name')}
+                  onChange={(e) => updateField('full_name', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Email" htmlFor="email" required>
+                <Input
+                  id="email"
+                  type="email"
+                  variant="intake"
+                  placeholder="you@company.com"
+                  value={form.email}
+                  hasError={fieldHasError('email')}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="CV URL" htmlFor="cv_url" required>
+                <Input
+                  id="cv_url"
+                  type="url"
+                  variant="intake"
+                  placeholder="https://..."
+                  value={form.cv_url}
+                  hasError={fieldHasError('cv_url')}
+                  onChange={(e) => updateField('cv_url', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Portfolio URL" htmlFor="portfolio_url" required>
+                <Input
+                  id="portfolio_url"
+                  type="url"
+                  variant="intake"
+                  placeholder="https://..."
+                  value={form.portfolio_url}
+                  hasError={fieldHasError('portfolio_url')}
+                  onChange={(e) => updateField('portfolio_url', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="LinkedIn URL" htmlFor="linkedin_url" required>
+                <Input
+                  id="linkedin_url"
+                  type="url"
+                  variant="intake"
+                  placeholder="https://linkedin.com/in/..."
+                  value={form.linkedin_url}
+                  hasError={fieldHasError('linkedin_url')}
+                  onChange={(e) => updateField('linkedin_url', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Target titles (max 3)" required>
+                <div className="flex flex-col gap-3">
+                  {[0, 1, 2].map((i) => (
+                    <Input
+                      key={i}
+                      variant="intake"
+                      placeholder={`Title ${i + 1}`}
+                      value={form.target_titles[i]}
+                      hasError={fieldHasError('target_titles')}
+                      onChange={(e) =>
+                        updateArrayField('target_titles', i, e.target.value)
+                      }
+                    />
+                  ))}
+                </div>
+              </IntakeField>
+
+              <IntakeField label="Work-from country" htmlFor="work_from_country" required>
+                <Input
+                  id="work_from_country"
+                  variant="intake"
+                  placeholder="e.g. Spain, United States"
+                  value={form.work_from_country}
+                  hasError={fieldHasError('work_from_country')}
+                  onChange={(e) =>
+                    updateField('work_from_country', e.target.value)
+                  }
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Location mode" htmlFor="location_mode" required>
+                <IntakeSelect
+                  id="location_mode"
+                  value={form.location_mode}
+                  hasError={fieldHasError('location_mode')}
+                  onChange={(e) => updateField('location_mode', e.target.value)}
+                  required
+                >
+                  <option value="remote-only">Remote only</option>
+                  <option value="hybrid">Hybrid</option>
+                  <option value="onsite">On-site</option>
+                  <option value="remote-or-hybrid">Remote or hybrid</option>
+                  <option value="open">Open to any</option>
+                </IntakeSelect>
+              </IntakeField>
+
+              <IntakeField label="Languages" htmlFor="languages" required>
+                <Input
+                  id="languages"
+                  variant="intake"
+                  placeholder="e.g. English (fluent), Spanish (native)"
+                  value={form.languages}
+                  hasError={fieldHasError('languages')}
+                  onChange={(e) => updateField('languages', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Work authorization" htmlFor="work_auth" required>
+                <Textarea
+                  id="work_auth"
+                  variant="intake"
+                  placeholder="Visa status, right to work, sponsorship needs..."
+                  value={form.work_auth}
+                  hasError={fieldHasError('work_auth')}
+                  onChange={(e) => updateField('work_auth', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField
+                label="Constraints"
+                htmlFor="constraints"
+                required
+                counter={`${form.constraints.length}/400`}
+              >
+                <Textarea
+                  id="constraints"
+                  variant="intake"
+                  maxLength={400}
+                  placeholder="What you'd rather avoid — industries, company types, dealbreakers..."
+                  value={form.constraints}
+                  hasError={fieldHasError('constraints')}
+                  onChange={(e) => updateField('constraints', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField label="Timeline" htmlFor="timeline" required>
+                <Input
+                  id="timeline"
+                  variant="intake"
+                  placeholder="e.g. Available immediately, 4-week notice"
+                  value={form.timeline}
+                  hasError={fieldHasError('timeline')}
+                  onChange={(e) => updateField('timeline', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField
+                label="Goal one-liner"
+                htmlFor="goal_one_liner"
+                required
+                counter={`${form.goal_one_liner.length}/280`}
+              >
+                <Textarea
+                  id="goal_one_liner"
+                  variant="intake"
+                  maxLength={280}
+                  placeholder="What you want next, in one sentence..."
+                  value={form.goal_one_liner}
+                  hasError={fieldHasError('goal_one_liner')}
+                  onChange={(e) => updateField('goal_one_liner', e.target.value)}
+                  required
+                />
+              </IntakeField>
+
+              <IntakeField
+                label="Compensation"
+                required
+                helper="Enter a pay floor or check Pay unpublished OK — one is required."
+              >
+                <div className="flex flex-col gap-4">
+                  <IntakeField label="Pay floor (USD/year)" htmlFor="pay_floor">
+                    <Input
+                      id="pay_floor"
+                      type="text"
+                      variant="intake"
+                      placeholder="e.g. 75000"
+                      value={form.pay_floor}
+                      hasError={fieldHasError('pay_floor')}
+                      onChange={(e) => updateField('pay_floor', e.target.value)}
+                    />
+                  </IntakeField>
+                  <Checkbox
+                    id="pay_unpublished_ok"
+                    name="pay_unpublished_ok"
+                    variant="intake"
+                    label="Pay unpublished OK — I prefer not to share a number"
+                    checked={form.pay_unpublished_ok}
+                    onChange={(e) =>
+                      updateField('pay_unpublished_ok', e.target.checked)
+                    }
+                  />
+                </div>
+              </IntakeField>
+            </div>
+
+            <div className="mt-8 border-t border-border pt-8">
+              <IntakeStepHeader
+                step={2}
+                title="Optional fields"
+                toggleLabel={
+                  showOptional
+                    ? 'Hide — defaults apply if skipped'
+                    : 'Show — defaults apply if skipped'
+                }
+                onToggle={() => setShowOptional((open) => !open)}
+              />
+
+              {showOptional && (
+                <div className="flex flex-col gap-4">
+                  <IntakeField label="City" htmlFor="city">
+                    <Input
+                      id="city"
+                      variant="intake"
+                      value={form.city}
+                      onChange={(e) => updateField('city', e.target.value)}
+                    />
+                  </IntakeField>
+
+                  <IntakeField label="Industries prefer (max 3)">
+                    <div className="flex flex-col gap-3">
+                      {[0, 1, 2].map((i) => (
+                        <Input
+                          key={i}
+                          variant="intake"
+                          placeholder={`Industry ${i + 1}`}
+                          value={form.industries_prefer[i]}
+                          onChange={(e) =>
+                            updateArrayField('industries_prefer', i, e.target.value)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </IntakeField>
+
+                  <IntakeField label="Industries avoid (max 3)">
+                    <div className="flex flex-col gap-3">
+                      {[0, 1, 2].map((i) => (
+                        <Input
+                          key={i}
+                          variant="intake"
+                          placeholder={`Industry ${i + 1}`}
+                          value={form.industries_avoid[i]}
+                          onChange={(e) =>
+                            updateArrayField('industries_avoid', i, e.target.value)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </IntakeField>
+
+                  <IntakeField label="Employment type" htmlFor="employment_type">
+                    <IntakeSelect
+                      id="employment_type"
+                      value={form.employment_type}
+                      onChange={(e) =>
+                        updateField('employment_type', e.target.value)
+                      }
+                    >
+                      <option value="FTE">FTE</option>
+                      <option value="contract">Contract</option>
+                      <option value="freelance">Freelance</option>
+                      <option value="open">Open to any</option>
+                    </IntakeSelect>
+                  </IntakeField>
+
+                  <IntakeField
+                    label="Already applied (companies/roles)"
+                    htmlFor="already_applied"
+                  >
+                    <Textarea
+                      id="already_applied"
+                      variant="intake"
+                      placeholder="Roles or companies you've already applied to..."
+                      value={form.already_applied}
+                      onChange={(e) =>
+                        updateField('already_applied', e.target.value)
+                      }
+                    />
+                  </IntakeField>
+
+                  <IntakeField label="Notice period" htmlFor="notice_period">
+                    <Input
+                      id="notice_period"
+                      variant="intake"
+                      placeholder="e.g. 2 weeks, 1 month"
+                      value={form.notice_period}
+                      onChange={(e) =>
+                        updateField('notice_period', e.target.value)
+                      }
+                    />
+                  </IntakeField>
+
+                  <IntakeField label="Overlap hours (timezone)" htmlFor="overlap_hours">
+                    <Input
+                      id="overlap_hours"
+                      variant="intake"
+                      placeholder="e.g. 4+ hours with US Eastern"
+                      value={form.overlap_hours}
+                      onChange={(e) =>
+                        updateField('overlap_hours', e.target.value)
+                      }
+                    />
+                  </IntakeField>
+
+                  <IntakeField label="Companies like (max 3)">
+                    <div className="flex flex-col gap-3">
+                      {[0, 1, 2].map((i) => (
+                        <Input
+                          key={i}
+                          variant="intake"
+                          placeholder={`Company ${i + 1}`}
+                          value={form.companies_like[i]}
+                          onChange={(e) =>
+                            updateArrayField('companies_like', i, e.target.value)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </IntakeField>
+
+                  <IntakeField label="English level" htmlFor="english_level">
+                    <IntakeSelect
+                      id="english_level"
+                      value={form.english_level}
+                      onChange={(e) =>
+                        updateField('english_level', e.target.value)
+                      }
+                    >
+                      <option value="">Not specified</option>
+                      <option value="native">Native</option>
+                      <option value="fluent">Fluent</option>
+                      <option value="professional">Professional</option>
+                      <option value="conversational">Conversational</option>
+                    </IntakeSelect>
+                  </IntakeField>
+                </div>
+              )}
+            </div>
+
+            <div
+              className={cn(
+                'mt-6 flex flex-col gap-4 border-t border-border pt-6 lg:mt-6 lg:flex-row lg:items-center lg:gap-6',
+              )}
             >
-              {loading ? 'Submitting…' : 'Submit intake'}
-            </button>
-            <Link
-              to="/checkout"
-              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              Back to checkout
-            </Link>
-          </div>
-        </form>
-      </Section>
+              <button
+                type="submit"
+                disabled={loading}
+                className="intake-submit w-full lg:w-auto"
+              >
+                {loading ? 'Submitting…' : 'Submit intake'}
+              </button>
+              <Link
+                to="/checkout"
+                className="font-body text-center text-[14px] text-foreground underline underline-offset-4 hover:text-muted lg:text-left"
+              >
+                Back to checkout
+              </Link>
+            </div>
+          </form>
+        </IntakePanel>
+      </div>
     </PageLayout>
   )
 }

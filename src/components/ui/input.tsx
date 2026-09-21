@@ -1,9 +1,32 @@
 import { cn } from '../../lib/utils'
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  variant?: 'default' | 'intake'
+  hasError?: boolean
+}
 
-export function Input({ className, type, ...props }: InputProps) {
+export function Input({
+  className,
+  type,
+  variant = 'default',
+  hasError,
+  ...props
+}: InputProps) {
+  if (variant === 'intake') {
+    return (
+      <input
+        type={type}
+        className={cn(
+          'intake-field',
+          hasError && 'intake-field-error',
+          className,
+        )}
+        {...props}
+      />
+    )
+  }
+
   return (
     <input
       type={type}
