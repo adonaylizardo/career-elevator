@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { cn } from '../../lib/utils'
 
 interface IncludedCard {
@@ -26,16 +27,16 @@ const CARDS: IncludedCard[] = [
 ]
 
 const CARD_COUNT = CARDS.length
-const PEEK = 12
+const PEEK = 10
 
 function CardGraphic({ variant }: { variant: IncludedCard['variant'] }) {
   if (variant === 'market') {
     return (
-      <div className="mb-6 flex h-28 items-end gap-1.5 px-1">
-        {[40, 64, 48, 80, 56, 72, 44].map((height, index) => (
+      <div className="mb-4 flex h-14 items-end gap-1 px-0.5 sm:h-16">
+        {[38, 58, 44, 72, 50, 64, 40].map((height, index) => (
           <span
             key={index}
-            className="w-6 rounded-sm bg-pink/90"
+            className="w-4 rounded-[2px] bg-pink/90 sm:w-5"
             style={{ height: `${height}%` }}
           />
         ))}
@@ -45,12 +46,12 @@ function CardGraphic({ variant }: { variant: IncludedCard['variant'] }) {
 
   if (variant === 'gaps') {
     return (
-      <div className="mb-6 grid grid-cols-4 gap-2">
-        {Array.from({ length: 8 }).map((_, index) => (
+      <div className="mb-4 grid grid-cols-6 gap-1.5">
+        {Array.from({ length: 12 }).map((_, index) => (
           <span
             key={index}
             className={cn(
-              'aspect-square rounded-sm',
+              'aspect-square rounded-[2px]',
               index % 3 === 0 ? 'bg-pink/90' : 'bg-surface',
             )}
           />
@@ -60,17 +61,43 @@ function CardGraphic({ variant }: { variant: IncludedCard['variant'] }) {
   }
 
   return (
-    <div className="mb-6 flex flex-wrap gap-2">
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div className="mb-4 flex flex-wrap gap-1.5">
+      {Array.from({ length: 8 }).map((_, index) => (
         <span
           key={index}
           className={cn(
-            'h-3 rounded-full',
-            index % 2 === 0 ? 'w-16 bg-pink/90' : 'w-10 bg-surface',
+            'h-2 rounded-full',
+            index % 2 === 0 ? 'w-10 bg-pink/90' : 'w-7 bg-surface',
           )}
         />
       ))}
     </div>
+  )
+}
+
+function IncludedCardContent({
+  card,
+  className,
+  style,
+}: {
+  card: IncludedCard
+  className?: string
+  style?: CSSProperties
+}) {
+  return (
+    <article
+      className={cn(
+        'flex flex-col rounded-[16px] border border-border/70 bg-card p-5 shadow-sm sm:rounded-[20px] sm:p-6',
+        className,
+      )}
+      style={style}
+    >
+      <CardGraphic variant={card.variant} />
+      <h3 className="text-base font-semibold sm:text-lg">{card.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {card.body}
+      </p>
+    </article>
   )
 }
 
@@ -85,7 +112,7 @@ function getCardTransform(index: number, progress: number): number {
   const stageEnd = (index + 1) * stageSize
 
   if (progress < stageStart) {
-    return index === 0 ? 0 : 120
+    return index === 0 ? 0 : 80
   }
 
   if (progress >= stageEnd) {
@@ -98,7 +125,7 @@ function getCardTransform(index: number, progress: number): number {
     return stageProgress * PEEK
   }
 
-  const fromY = 120 - stageProgress * 120
+  const fromY = 80 - stageProgress * 80
   const stackY = (index - 1) * PEEK + stageProgress * PEEK
   return Math.min(fromY, stackY)
 }
@@ -111,7 +138,35 @@ function getCardOpacity(index: number, progress: number): number {
   return Math.min(Math.max(reveal * 2, 0), 1)
 }
 
-export function WhatsIncludedStack() {
+function MobileIncludedStack() {
+  return (
+    <section className="bg-card py-12 sm:py-14 lg:hidden">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8">
+        <h2 className="mb-6 text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+          What&apos;s included
+        </h2>
+
+        <div className="relative mx-auto w-full max-w-[340px] pb-2">
+          {CARDS.map((card, index) => (
+            <IncludedCardContent
+              key={card.title}
+              card={card}
+              className={cn(index > 0 && 'relative -mt-[52px]')}
+              style={index > 0 ? { zIndex: index + 1 } : undefined}
+            />
+          ))}
+        </div>
+
+        <p className="mx-auto mt-6 max-w-sm text-center text-sm text-muted-foreground">
+          Delivered as a clean, readable sheet you can work through at your own
+          pace.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function DesktopIncludedStack() {
   const sectionRef = useRef<HTMLElement>(null)
   const [progress, setProgress] = useState(0)
 
@@ -143,21 +198,20 @@ export function WhatsIncludedStack() {
   return (
     <section
       ref={sectionRef}
-      id="whats-included"
-      className="relative bg-card"
-      style={{ height: `${100 + CARD_COUNT * 75}vh` }}
+      className="relative hidden bg-card lg:block"
+      style={{ height: `${100 + CARD_COUNT * 42}vh` }}
     >
-      <div className="sticky top-16 flex min-h-[calc(100vh-4rem)] items-center py-16 sm:py-20">
-        <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10">
-          <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight sm:text-4xl">
+      <div className="sticky top-16 flex min-h-[calc(100vh-4rem)] items-center py-12">
+        <div className="mx-auto w-full max-w-[1200px] px-8 lg:px-10">
+          <h2 className="mb-8 text-center text-3xl font-semibold tracking-tight">
             What&apos;s included
           </h2>
 
-          <div className="relative mx-auto h-[360px] w-full max-w-[520px] sm:h-[440px]">
+          <div className="relative mx-auto h-[300px] w-full max-w-[520px]">
             {CARDS.map((card, index) => (
               <article
                 key={card.title}
-                className="absolute inset-0 flex flex-col rounded-[24px] border border-border/70 bg-card p-6 shadow-sm will-change-transform sm:p-8"
+                className="absolute inset-0 flex flex-col rounded-[20px] border border-border/70 bg-card p-6 shadow-sm will-change-transform"
                 style={{
                   opacity: getCardOpacity(index, progress),
                   zIndex: index + 1,
@@ -165,22 +219,29 @@ export function WhatsIncludedStack() {
                 }}
               >
                 <CardGraphic variant={card.variant} />
-                <h3 className="text-xl font-semibold sm:text-2xl">
-                  {card.title}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                <h3 className="text-lg font-semibold">{card.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {card.body}
                 </p>
               </article>
             ))}
           </div>
 
-          <p className="mx-auto mt-10 max-w-xl text-center text-base text-muted-foreground">
+          <p className="mx-auto mt-8 max-w-md text-center text-sm text-muted-foreground">
             Delivered as a clean, readable sheet you can work through at your
             own pace.
           </p>
         </div>
       </div>
     </section>
+  )
+}
+
+export function WhatsIncludedStack() {
+  return (
+    <div id="whats-included">
+      <MobileIncludedStack />
+      <DesktopIncludedStack />
+    </div>
   )
 }

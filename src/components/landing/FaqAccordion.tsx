@@ -8,10 +8,14 @@ export interface FaqItem {
 
 interface FaqAccordionProps {
   items: FaqItem[]
+  defaultOpenIndex?: number | null
 }
 
-export function FaqAccordion({ items }: FaqAccordionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+export function FaqAccordion({
+  items,
+  defaultOpenIndex = null,
+}: FaqAccordionProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(defaultOpenIndex)
 
   function toggle(index: number) {
     setOpenIndex((current) => (current === index ? null : index))

@@ -90,13 +90,16 @@ export function Landing() {
   return (
     <PageLayout transparentHeader>
       {/* Hero */}
-      <section className="bg-background px-5 pb-16 pt-12 text-center sm:px-8 sm:pb-20 sm:pt-16 lg:px-10 lg:pb-24 lg:pt-20">
-        <div className="mx-auto max-w-[820px]">
-          <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.5rem] lg:leading-[1.05]">
+      <section className="bg-background px-5 pb-12 pt-10 text-center sm:px-8 sm:pb-14 sm:pt-12 lg:px-10 lg:pb-16 lg:pt-14">
+        <div className="mx-auto max-w-[640px]">
+          <p className="mb-5 font-nav text-[11px] uppercase tracking-[0.14em] text-pink">
+            ONE-TIME RESEARCH ENGAGEMENT
+          </p>
+          <h1 className="text-[1.75rem] font-semibold leading-[1.14] tracking-tight sm:text-4xl sm:leading-[1.12] lg:text-[2.625rem] lg:leading-[1.1]">
             Career Elevator: a curated list of roles that actually fit your
             experience.
           </h1>
-          <div className="mt-8 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <div className="mt-5 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
             <p>
               Career Elevator is a one-time, hand-built research engagement. You
               get the Opportunity Sheet: 10–20 open roles matched to your CV and
@@ -108,40 +111,48 @@ export function Landing() {
               scrolling job boards and applying into the void.
             </p>
           </div>
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <CtaButton />
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-7 flex flex-col items-center gap-2.5">
+            <CtaButton className="h-11 px-8 text-xs sm:h-12 sm:px-10 sm:text-sm" />
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Your Opportunity Sheet, delivered in 3–5 days after intake.
             </p>
           </div>
         </div>
       </section>
 
-      {/* What's included — scroll-pinned stack */}
+      {/* What's included — scroll-pinned stack (desktop) / compact stack (mobile) */}
       <WhatsIncludedStack />
 
       {/* Who it's for */}
-      <Section id="who-its-for" title="Who it's for" className="bg-card">
-        <ul className="space-y-4">
-          {WHO_FOR_ITEMS.map((item) => (
-            <li key={item} className="flex gap-4 text-base sm:text-lg">
-              <span
-                className="mt-2.5 h-2 w-2 shrink-0 rounded-full bg-pink"
-                aria-hidden
-              />
-              <span className="text-muted-foreground">{item}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-10 rounded-[24px] bg-surface p-6 sm:p-8 lg:rounded-[32px] lg:p-10">
-          <h3 className="text-2xl font-semibold sm:text-3xl">
-            Who it&apos;s not for
-          </h3>
-          <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            If you&apos;re looking for someone to rewrite your portfolio, coach
-            you through interviews, or apply on your behalf, this isn&apos;t
-            that. It&apos;s research, done carefully, and handed to you.
-          </p>
+      <Section
+        id="who-its-for"
+        title="Who it's for"
+        className="bg-card"
+        titleClassName="text-xl sm:text-2xl lg:mb-6"
+        containerClassName="max-w-[1200px]"
+      >
+        <div className="max-w-md lg:max-w-lg">
+          <ul className="space-y-3">
+            {WHO_FOR_ITEMS.map((item) => (
+              <li key={item} className="flex gap-3 text-sm sm:text-[15px]">
+                <span
+                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-pink"
+                  aria-hidden
+                />
+                <span className="text-muted-foreground">{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 rounded-[16px] bg-surface p-5 sm:p-6">
+            <h3 className="text-base font-semibold sm:text-lg">
+              Who it&apos;s not for
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              If you&apos;re looking for someone to rewrite your portfolio, coach
+              you through interviews, or apply on your behalf, this isn&apos;t
+              that. It&apos;s research, done carefully, and handed to you.
+            </p>
+          </div>
         </div>
       </Section>
 
@@ -150,20 +161,19 @@ export function Landing() {
         id="how-it-works"
         title="How it works"
         className="bg-background"
+        titleClassName="text-xl sm:text-2xl"
       >
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {HOW_IT_WORKS.map((item) => (
             <article
               key={item.step}
-              className="rounded-[24px] border border-border/70 bg-card p-6 sm:p-8"
+              className="rounded-[16px] border border-border/70 bg-card p-5 sm:p-6"
             >
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
                 {item.step}
               </span>
-              <h3 className="mt-5 text-lg font-semibold sm:text-xl">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+              <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {item.body}
               </p>
             </article>
@@ -172,15 +182,19 @@ export function Landing() {
       </Section>
 
       {/* What's not included */}
-      <Section title="What's not included" className="bg-card">
-        <p className="mb-8 text-base text-muted-foreground sm:text-lg">
+      <Section
+        title="What's not included"
+        className="bg-card"
+        titleClassName="text-xl sm:text-2xl"
+      >
+        <p className="mb-6 text-sm text-muted-foreground sm:text-[15px]">
           Stated plainly so there are no surprises:
         </p>
-        <div className="space-y-8">
+        <div className="max-w-2xl space-y-5">
           {NOT_INCLUDED.map((item) => (
             <div key={item.title}>
-              <p className="text-lg font-semibold sm:text-xl">{item.title}</p>
-              <p className="mt-2 max-w-3xl text-base leading-relaxed text-muted-foreground">
+              <p className="text-base font-semibold">{item.title}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                 {item.body}
               </p>
             </div>
@@ -189,37 +203,44 @@ export function Landing() {
       </Section>
 
       {/* About */}
-      <Section eyebrow="About" className="bg-background">
-        <h2 className="mb-6 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Who builds Career Elevator?
-        </h2>
-        <p className="max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Adonay — product and UX design mentor and career coach. I&apos;ve
-          helped more than 3,000 students around the world, with mentoring and
-          teaching experience at DesignLab, Crehana, CareerFoundry and more. I
-          mentor designers, and my work keeps me close to how hiring decisions
-          actually get made. That&apos;s the lens every Opportunity Sheet is
-          built through — not a job board, but someone who has spent years
-          reading CVs, portfolios, and postings side by side.
-        </p>
+      <Section className="bg-background">
+        <div className="max-w-xl">
+          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            Built by Adonay — not a job board.
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+            Adonay — product and UX design mentor and career coach. I&apos;ve
+            helped more than 3,000 students around the world, with mentoring and
+            teaching experience at DesignLab, Crehana, CareerFoundry and more. I
+            mentor designers, and my work keeps me close to how hiring decisions
+            actually get made. That&apos;s the lens every Opportunity Sheet is
+            built through — not a job board, but someone who has spent years
+            reading CVs, portfolios, and postings side by side.
+          </p>
+        </div>
       </Section>
 
       {/* Pricing */}
-      <Section id="pricing" title="Pricing" className="bg-card">
-        <div className="mx-auto max-w-xl rounded-[24px] border border-border/70 bg-background p-8 sm:p-10 lg:rounded-[32px]">
-          <p className="text-3xl font-semibold sm:text-4xl">$49 — one time.</p>
-          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+      <Section
+        id="pricing"
+        title="Pricing"
+        className="bg-card"
+        titleClassName="text-xl sm:text-2xl"
+      >
+        <div className="mx-auto max-w-md rounded-[20px] border border-border/70 bg-background p-6 sm:p-8">
+          <p className="text-2xl font-semibold sm:text-3xl">$49 — one time.</p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             No subscription, no renewal, nothing recurring. You pay once, you
             get the sheet.
           </p>
-          <p className="mt-4 text-base text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Payment via{' '}
             <span className="font-medium text-foreground">PayPal</span> or{' '}
             <span className="font-medium text-foreground">crypto</span>.
           </p>
-          <div className="mt-8 flex flex-col items-start gap-3">
+          <div className="mt-6 flex flex-col items-start gap-2.5">
             <CtaButton size="default" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Prefer to see the intake questions first?{' '}
               <Link
                 to="/intake"
@@ -235,39 +256,39 @@ export function Landing() {
 
       {/* FAQ */}
       <Section id="faq" className="bg-background">
-        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            FAQ
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Answers to your questions
           </h2>
-          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground lg:text-right">
+          <p className="text-sm leading-relaxed text-muted-foreground sm:max-w-[11rem] sm:text-right">
             Need more information?
             <br />
             Feel free to reach out.
           </p>
         </div>
-        <FaqAccordion items={FAQ_ITEMS} />
+        <FaqAccordion items={FAQ_ITEMS} defaultOpenIndex={1} />
       </Section>
 
       {/* Closing CTA */}
-      <section className="px-5 pb-16 pt-8 sm:px-8 lg:px-10 lg:pb-24">
-        <div className="mx-auto max-w-[1200px] rounded-[32px] bg-surface px-6 py-10 sm:px-10 sm:py-12 lg:rounded-[40px] lg:px-12 lg:py-14">
+      <section className="px-5 pb-12 pt-4 sm:px-8 lg:px-10 lg:pb-16">
+        <div className="mx-auto max-w-[1200px] rounded-[28px] border border-border/80 bg-surface px-6 py-8 sm:rounded-[32px] sm:px-8 sm:py-10 lg:rounded-[36px] lg:px-10 lg:py-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-md">
-              <p className="text-base leading-relaxed text-muted-foreground">
+            <div className="max-w-lg">
+              <p className="mb-6 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
                 Career Elevator gives you an Opportunity Sheet: 10–20 roles
                 matched to your experience, with honest notes on your gaps and
                 the market. One payment, delivered in 3–5 days. Built by
                 someone who has guided 3,000+ designers through this exact
                 transition.
               </p>
-            </div>
-            <div className="flex flex-col gap-6 lg:items-end">
-              <h2 className="text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.25rem]">
+              <h2 className="text-3xl font-semibold leading-[1.08] tracking-tight sm:text-4xl lg:text-[2.75rem] lg:leading-[1.05]">
                 Stop searching.
                 <br />
                 Start applying.
               </h2>
-              <CtaButton />
+            </div>
+            <div className="shrink-0 lg:pb-1">
+              <CtaButton className="h-11 px-8 text-xs sm:h-12 sm:px-10 sm:text-sm" />
             </div>
           </div>
         </div>
