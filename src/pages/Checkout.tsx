@@ -42,7 +42,7 @@ export function Checkout() {
 
         <div className="mt-10 space-y-8">
           {/* PayPal */}
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-[24px] border border-border/70 bg-surface p-6 sm:p-8">
             <h2 className="text-lg font-semibold">PayPal</h2>
             {hasPaypal ? (
               <div className="mt-4">
@@ -67,7 +67,7 @@ export function Checkout() {
           </div>
 
           {/* Crypto */}
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-[24px] border border-border/70 bg-surface p-6 sm:p-8">
             <h2 className="text-lg font-semibold">Crypto (USDT)</h2>
             {hasCrypto ? (
               <div className="mt-4 space-y-4">

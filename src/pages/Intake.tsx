@@ -316,7 +316,7 @@ export function Intake() {
                 id="location_mode"
                 value={form.location_mode}
                 onChange={(e) => updateField('location_mode', e.target.value)}
-                className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
                 required
               >
                 <option value="remote-only">Remote only</option>
@@ -485,7 +485,7 @@ export function Intake() {
                     onChange={(e) =>
                       updateField('employment_type', e.target.value)
                     }
-                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
                   >
                     <option value="FTE">FTE (default)</option>
                     <option value="contract">Contract</option>
@@ -556,7 +556,7 @@ export function Intake() {
                     onChange={(e) =>
                       updateField('english_level', e.target.value)
                     }
-                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-[6px] border border-border bg-card px-3 py-2 text-sm"
                   >
                     <option value="">Not specified</option>
                     <option value="native">Native</option>
