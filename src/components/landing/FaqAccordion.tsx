@@ -22,39 +22,35 @@ export function FaqAccordion({
   }
 
   return (
-    <div className="divide-y divide-border border-y border-border">
+    <div className="w-full max-w-[900px]">
       {items.map((item, index) => {
         const isOpen = openIndex === index
 
         return (
-          <div key={item.question} className="py-1">
-            <div
-              className={cn(
-                isOpen && 'rounded-[12px] bg-surface px-4 py-1 sm:px-5',
-              )}
+          <div
+            key={item.question}
+            className={cn(
+              'border-[#DEDEDE]',
+              index === 0 ? 'border-y' : 'border-b',
+            )}
+          >
+            <button
+              type="button"
+              className="flex w-full items-start justify-between gap-6 px-0 py-5 text-left"
+              aria-expanded={isOpen}
+              onClick={() => toggle(index)}
             >
-              <button
-                type="button"
-                className="flex w-full items-start justify-between gap-6 py-5 text-left sm:py-6"
-                aria-expanded={isOpen}
-                onClick={() => toggle(index)}
+              <span className="text-faq-q">{item.question}</span>
+              <span
+                className="font-body mt-0.5 shrink-0 text-[20px] font-medium leading-[1.15] tracking-[-0.3px] text-foreground"
+                aria-hidden
               >
-                <span className="text-base font-medium text-foreground sm:text-lg">
-                  {item.question}
-                </span>
-                <span
-                  className="mt-0.5 shrink-0 text-xl font-light leading-none text-muted-foreground"
-                  aria-hidden
-                >
-                  {isOpen ? '×' : '+'}
-                </span>
-              </button>
-              {isOpen && (
-                <p className="max-w-3xl pb-5 text-base leading-relaxed text-muted-foreground sm:pb-6">
-                  {item.answer}
-                </p>
-              )}
-            </div>
+                {isOpen ? '×' : '+'}
+              </span>
+            </button>
+            {isOpen && (
+              <p className="text-faq-a max-w-[760px] pb-5">{item.answer}</p>
+            )}
           </div>
         )
       })}

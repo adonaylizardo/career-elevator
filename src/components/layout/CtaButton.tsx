@@ -4,18 +4,17 @@ import { cn } from '../../lib/utils'
 
 interface CtaButtonProps {
   className?: string
-  size?: 'lg' | 'default'
+  variant?: 'pill' | 'close' | 'mobile'
 }
 
-export function CtaButton({ className, size = 'lg' }: CtaButtonProps) {
+export function CtaButton({
+  className,
+  variant = 'pill',
+}: CtaButtonProps) {
   return (
     <Link
       to="/checkout"
-      className={cn(
-        buttonVariants({ variant: 'pill', size }),
-        size === 'lg' && 'h-14 px-10 text-sm',
-        className,
-      )}
+      className={cn(buttonVariants({ variant, size: 'lg' }), className)}
     >
       Get Career Elevator — $49
     </Link>

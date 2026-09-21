@@ -201,8 +201,8 @@ export function Intake() {
   return (
     <PageLayout>
       <Section className="pt-16 sm:pt-24">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Intake form</h1>
-        <p className="mt-4 text-muted-foreground">
+        <h1 className="font-body text-2xl font-medium sm:text-3xl">Intake form</h1>
+        <p className="text-body-muted mt-4">
           Complete this form after payment. Fields marked with * are required.
           Optional fields are collapsed below — defaults apply if skipped.
         </p>

@@ -34,8 +34,8 @@ export function Checkout() {
   return (
     <PageLayout>
       <Section className="pt-16 sm:pt-24">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Checkout</h1>
-        <p className="mt-4 text-muted-foreground">
+        <h1 className="font-body text-2xl font-medium sm:text-3xl">Checkout</h1>
+        <p className="text-body-muted mt-4">
           Career Elevator — $49 one-time. After payment, complete the intake
           form so we can build your Opportunity Sheet.
         </p>

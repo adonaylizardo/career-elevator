@@ -1,0 +1,47 @@
+@font-face {
+  font-family: 'Frama';
+  src: url('../assets/fonts/incredibles.dev/d0119a73150e82f9.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Frama';
+  src: url('../assets/fonts/incredibles.dev/25f03097e47921a8.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neue Montreal';
+  src: url('../assets/fonts/incredibles.dev/dbff28525f1c9cae.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neue Montreal';
+  src: url('../assets/fonts/incredibles.dev/74131227da65d0da.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neue Montreal';
+  src: url('../assets/fonts/incredibles.dev/e660e64de5737fcf.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supply Mono';
+  src: url('../assets/fonts/incredibles.dev/fb9ac3a914601e72.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
