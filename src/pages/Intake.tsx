@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { IntakeField } from '../components/intake/IntakeField'
 import { IntakeSelect } from '../components/intake/IntakeSelect'
 import { IntakeStepHeader } from '../components/intake/IntakeStepHeader'
-import { PageLayout } from '../components/layout/PageLayout'
+import { IntakeLayout } from '../components/layout/IntakeLayout'
 import { Checkbox } from '../components/ui/checkbox'
 import { Input } from '../components/ui/input'
 import { Textarea } from '../components/ui/textarea'
@@ -179,7 +179,7 @@ export function Intake() {
 
     if (fields.length === 0) return null
 
-    let summary = 'Please fix the highlighted fields.'
+    let summary = 'Please fill in the highlighted fields.'
     if (fields.includes('email')) {
       summary += ' Email looks incomplete.'
     }
@@ -240,8 +240,8 @@ export function Intake() {
 
   if (submitted) {
     return (
-      <PageLayout>
-        <div className="bg-background px-5 py-10 lg:px-20 lg:py-16">
+      <IntakeLayout>
+        <div className="px-5 py-10 lg:px-20 lg:py-16">
           <IntakePanel>
             <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
               Intake received
@@ -259,13 +259,13 @@ export function Intake() {
             </Link>
           </IntakePanel>
         </div>
-      </PageLayout>
+      </IntakeLayout>
     )
   }
 
   return (
-    <PageLayout>
-      <div className="bg-background px-5 py-10 lg:px-20 lg:py-16">
+    <IntakeLayout>
+      <div className="px-5 py-10 lg:px-20 lg:py-16">
         <IntakePanel>
           <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
             Intake form
@@ -277,14 +277,14 @@ export function Intake() {
 
           {error && (
             <div
-              className="mt-6 rounded-lg border border-accent bg-error-fill px-4 py-3 font-body text-[14px] leading-[1.35] text-foreground"
+              className="intake-error-alert mt-6 rounded-lg px-4 py-3 font-body text-[14px] leading-[1.35]"
               role="alert"
             >
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-8">
+          <form noValidate onSubmit={handleSubmit} className="mt-8">
             <IntakeStepHeader step={1} title="Required" />
 
             <div className="flex flex-col gap-4">
@@ -296,7 +296,6 @@ export function Intake() {
                   value={form.full_name}
                   hasError={fieldHasError('full_name')}
                   onChange={(e) => updateField('full_name', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -309,7 +308,6 @@ export function Intake() {
                   value={form.email}
                   hasError={fieldHasError('email')}
                   onChange={(e) => updateField('email', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -322,7 +320,6 @@ export function Intake() {
                   value={form.cv_url}
                   hasError={fieldHasError('cv_url')}
                   onChange={(e) => updateField('cv_url', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -335,7 +332,6 @@ export function Intake() {
                   value={form.portfolio_url}
                   hasError={fieldHasError('portfolio_url')}
                   onChange={(e) => updateField('portfolio_url', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -348,7 +344,6 @@ export function Intake() {
                   value={form.linkedin_url}
                   hasError={fieldHasError('linkedin_url')}
                   onChange={(e) => updateField('linkedin_url', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -379,7 +374,6 @@ export function Intake() {
                   onChange={(e) =>
                     updateField('work_from_country', e.target.value)
                   }
-                  required
                 />
               </IntakeField>
 
@@ -389,7 +383,6 @@ export function Intake() {
                   value={form.location_mode}
                   hasError={fieldHasError('location_mode')}
                   onChange={(e) => updateField('location_mode', e.target.value)}
-                  required
                 >
                   <option value="remote-only">Remote only</option>
                   <option value="hybrid">Hybrid</option>
@@ -407,7 +400,6 @@ export function Intake() {
                   value={form.languages}
                   hasError={fieldHasError('languages')}
                   onChange={(e) => updateField('languages', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -419,14 +411,12 @@ export function Intake() {
                   value={form.work_auth}
                   hasError={fieldHasError('work_auth')}
                   onChange={(e) => updateField('work_auth', e.target.value)}
-                  required
                 />
               </IntakeField>
 
               <IntakeField
                 label="Constraints"
                 htmlFor="constraints"
-                required
                 counter={`${form.constraints.length}/400`}
               >
                 <Textarea
@@ -437,7 +427,6 @@ export function Intake() {
                   value={form.constraints}
                   hasError={fieldHasError('constraints')}
                   onChange={(e) => updateField('constraints', e.target.value)}
-                  required
                 />
               </IntakeField>
 
@@ -449,14 +438,12 @@ export function Intake() {
                   value={form.timeline}
                   hasError={fieldHasError('timeline')}
                   onChange={(e) => updateField('timeline', e.target.value)}
-                  required
                 />
               </IntakeField>
 
               <IntakeField
                 label="Goal one-liner"
                 htmlFor="goal_one_liner"
-                required
                 counter={`${form.goal_one_liner.length}/280`}
               >
                 <Textarea
@@ -467,13 +454,11 @@ export function Intake() {
                   value={form.goal_one_liner}
                   hasError={fieldHasError('goal_one_liner')}
                   onChange={(e) => updateField('goal_one_liner', e.target.value)}
-                  required
                 />
               </IntakeField>
 
               <IntakeField
                 label="Compensation"
-                required
                 helper="Enter a pay floor or check Pay unpublished OK — one is required."
               >
                 <div className="flex flex-col gap-4">
@@ -668,6 +653,6 @@ export function Intake() {
           </form>
         </IntakePanel>
       </div>
-    </PageLayout>
+    </IntakeLayout>
   )
 }

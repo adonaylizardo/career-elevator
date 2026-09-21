@@ -194,12 +194,20 @@
     outline-offset: 0;
   }
 
-  .intake-field-error {
-    @apply border-accent bg-error-fill;
+  .intake-field.intake-field-error {
+    border-color: #fc4778;
+    background-color: #fff5f8;
   }
 
-  .intake-field-error:focus-visible {
-    outline-color: #fc4778;
+  .intake-field.intake-field-error:focus-visible {
+    outline: 2px solid #fc4778;
+    outline-offset: 0;
+  }
+
+  .intake-error-alert {
+    border: 1px solid #fc4778;
+    background-color: #fff5f8;
+    color: #2b2b2b;
   }
 
   .intake-label {
