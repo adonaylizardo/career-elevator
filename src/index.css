@@ -204,6 +204,16 @@
     outline-offset: 0;
   }
 
+  .intake-cv-upload {
+    min-height: 88px;
+  }
+
+  @media (min-width: 1024px) {
+    .intake-cv-upload {
+      min-height: 96px;
+    }
+  }
+
   .intake-error-alert {
     border: 1px solid #fc4778;
     background-color: #fff5f8;

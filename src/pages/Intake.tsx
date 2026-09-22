@@ -14,8 +14,9 @@ import {
   type ValidationResult,
   INITIAL_FORM,
   buildPayload,
-  downloadJson,
+  downloadIntakePackage,
   earliestInvalidStep,
+  submitIntake,
   validateAll,
   validateStep1,
   validateStep2,
@@ -73,6 +74,7 @@ export function Intake() {
   const [fieldErrors, setFieldErrors] = useState<Set<FieldKey>>(new Set())
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState<IntakeData>(INITIAL_FORM)
+  const [cvFile, setCvFile] = useState<File | null>(null)
 
   function clearFieldError(key: FieldKey) {
     setFieldErrors((prev) => {
@@ -89,6 +91,11 @@ export function Intake() {
     if (key === 'pay_floor' || key === 'pay_unpublished_ok') {
       clearFieldError('pay_floor')
     }
+  }
+
+  function handleCvFileChange(file: File | null) {
+    setCvFile(file)
+    clearFieldError('cv_url')
   }
 
   function updateArrayField(
@@ -124,7 +131,7 @@ export function Intake() {
     clearErrors()
 
     if (step === 1) {
-      const validation = validateStep1(form)
+      const validation = validateStep1(form, cvFile)
       if (validation) {
         applyValidation(validation)
         return
@@ -153,7 +160,7 @@ export function Intake() {
     e.preventDefault()
     clearErrors()
 
-    const validation = validateAll(form)
+    const validation = validateAll(form, cvFile)
     if (validation) {
       applyValidation(validation)
       setStep(earliestInvalidStep(validation.fields))
@@ -161,30 +168,19 @@ export function Intake() {
     }
 
     setLoading(true)
-    const payload = buildPayload(form)
+    const payload = buildPayload(form, cvFile)
 
-    if (formEndpoint?.trim()) {
-      try {
-        const res = await fetch(formEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) throw new Error(`Submission failed (${res.status})`)
-        setSubmitted(true)
-      } catch (err) {
-        setSubmitError(
-          err instanceof Error
-            ? err.message
-            : 'Submission failed. Your data will be downloaded instead.',
-        )
-        downloadJson(payload)
-      } finally {
-        setLoading(false)
-      }
-    } else {
-      downloadJson(payload)
+    try {
+      await submitIntake(payload, cvFile, formEndpoint)
       setSubmitted(true)
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Submission failed. Your data will be downloaded instead.',
+      )
+      downloadIntakePackage(payload, cvFile)
+    } finally {
       setLoading(false)
     }
   }
@@ -259,8 +255,10 @@ export function Intake() {
             {step === 1 && (
               <StepLinksFields
                 form={form}
+                cvFile={cvFile}
                 fieldHasError={fieldHasError}
                 updateField={updateField}
+                onCvFileChange={handleCvFileChange}
               />
             )}
 

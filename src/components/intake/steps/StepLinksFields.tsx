@@ -1,17 +1,22 @@
 import type { FieldKey, IntakeData } from '../../../lib/intakeForm'
+import { IntakeCvField } from '../IntakeCvField'
 import { IntakeField } from '../IntakeField'
 import { Input } from '../../ui/input'
 
 interface StepFieldsProps {
   form: IntakeData
+  cvFile: File | null
   fieldHasError: (key: FieldKey) => boolean
   updateField: <K extends FieldKey>(key: K, value: IntakeData[K]) => void
+  onCvFileChange: (file: File | null) => void
 }
 
 export function StepLinksFields({
   form,
+  cvFile,
   fieldHasError,
   updateField,
+  onCvFileChange,
 }: StepFieldsProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -38,17 +43,13 @@ export function StepLinksFields({
         />
       </IntakeField>
 
-      <IntakeField label="CV URL" htmlFor="cv_url" required>
-        <Input
-          id="cv_url"
-          type="url"
-          variant="intake"
-          placeholder="https://..."
-          value={form.cv_url}
-          hasError={fieldHasError('cv_url')}
-          onChange={(e) => updateField('cv_url', e.target.value)}
-        />
-      </IntakeField>
+      <IntakeCvField
+        cvUrl={form.cv_url}
+        cvFile={cvFile}
+        hasError={fieldHasError('cv_url')}
+        onCvUrlChange={(value) => updateField('cv_url', value)}
+        onCvFileChange={onCvFileChange}
+      />
 
       <IntakeField label="Portfolio URL" htmlFor="portfolio_url" required>
         <Input
