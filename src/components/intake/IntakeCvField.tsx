@@ -86,7 +86,6 @@ export function IntakeCvField({
           placeholder="https://drive.google.com/..."
           value={cvUrl}
           hasError={hasError}
-          className="h-11 lg:h-12"
           onChange={(e) => onCvUrlChange(e.target.value)}
         />
       </div>

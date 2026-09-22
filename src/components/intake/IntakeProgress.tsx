@@ -4,7 +4,7 @@ interface IntakeProgressProps {
 
 export function IntakeProgress({ step }: IntakeProgressProps) {
   return (
-    <p className="font-mono mb-2 text-[12px] font-medium leading-[1.3] text-muted">
+    <p className="font-mono text-[12px] font-medium leading-[1.3] text-muted">
       {step} / 3
     </p>
   )

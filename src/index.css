@@ -182,7 +182,16 @@
   }
 
   .intake-field {
-    @apply w-full rounded-lg border border-field bg-field px-4 py-3 font-body text-[15px] font-normal leading-[1.35] text-foreground;
+    @apply w-full rounded-lg border border-field bg-field px-4 font-body text-[14px] font-normal leading-[1.35] text-foreground;
+  }
+
+  input.intake-field,
+  select.intake-field {
+    @apply h-11 lg:h-12;
+  }
+
+  textarea.intake-field {
+    @apply min-h-[96px] py-3;
   }
 
   .intake-field::placeholder {
@@ -205,12 +214,12 @@
   }
 
   .intake-cv-upload {
-    min-height: 88px;
+    height: 88px;
   }
 
   @media (min-width: 1024px) {
     .intake-cv-upload {
-      min-height: 96px;
+      height: 96px;
     }
   }
 
@@ -221,7 +230,7 @@
   }
 
   .intake-label {
-    @apply font-body text-[15px] font-medium leading-[1.3] text-foreground;
+    @apply font-body text-[14px] font-medium leading-[1.3] text-foreground;
   }
 
   .intake-label-required {
@@ -233,7 +242,7 @@
   }
 
   .intake-submit {
-    @apply inline-flex h-12 items-center justify-center rounded-full bg-btn px-7 font-mono text-[12px] font-medium uppercase tracking-[0.3px] text-cta-text transition-colors hover:bg-[#1A1A1A] disabled:opacity-50;
+    @apply inline-flex h-12 items-center justify-center rounded-full bg-btn px-7 py-3.5 font-mono text-[12px] font-medium uppercase tracking-[0.3px] text-cta-text transition-colors hover:bg-[#1A1A1A] disabled:opacity-50;
   }
 
   @media (max-width: 1023px) {

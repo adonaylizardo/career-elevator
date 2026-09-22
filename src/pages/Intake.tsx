@@ -50,7 +50,7 @@ function IntakeErrorAlert({
 }) {
   return (
     <div
-      className="intake-error-alert mt-6 rounded-lg px-4 py-3"
+      className="intake-error-alert mt-4 rounded-lg px-4 py-3"
       role="alert"
     >
       <p className="font-body text-[14px] font-medium leading-[1.35] text-accent">
@@ -188,7 +188,7 @@ export function Intake() {
   if (submitted) {
     return (
       <IntakeLayout>
-        <div className="px-6 py-10 lg:px-12 lg:py-16">
+        <div className="flex justify-center px-5 py-12 lg:px-0 lg:py-24">
           <IntakePanel>
             <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
               Intake received
@@ -214,16 +214,18 @@ export function Intake() {
 
   return (
     <IntakeLayout>
-      <div className="px-6 py-10 lg:px-12 lg:py-16">
+      <div className="flex justify-center px-5 py-12 lg:px-0 lg:py-24">
         <IntakePanel>
-          <IntakeProgress step={step} />
+          <div className="flex flex-col gap-2 pb-2">
+            <IntakeProgress step={step} />
 
-          <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
-            Intake form
-          </h1>
-          <p className="text-body-muted mt-2 text-[15px] leading-[1.35] lg:text-[16px]">
-            {STEP_SUBTITLES[step]}
-          </p>
+            <h1 className="font-body text-[28px] font-medium leading-[0.95] tracking-[-0.5px] text-foreground lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
+              Intake form
+            </h1>
+            <p className="text-body-muted text-[15px] leading-[1.35] lg:text-[16px]">
+              {STEP_SUBTITLES[step]}
+            </p>
+          </div>
 
           {validationError && (
             <IntakeErrorAlert
@@ -234,7 +236,7 @@ export function Intake() {
 
           {submitError && (
             <div
-              className="intake-error-alert mt-6 rounded-lg px-4 py-3 font-body text-[14px] leading-[1.35]"
+              className="intake-error-alert mt-4 rounded-lg px-4 py-3 font-body text-[14px] leading-[1.35]"
               role="alert"
             >
               {submitError}
@@ -244,46 +246,46 @@ export function Intake() {
           <form
             noValidate
             onSubmit={step === 3 ? handleSubmit : handleContinue}
-            className="mt-6"
+            className={cn(
+              validationError || submitError ? 'mt-4' : 'mt-2',
+            )}
           >
-            <WizardSectionHeader
-              step={step}
-              title={section.title}
-              hint={section.hint}
-            />
-
-            {step === 1 && (
-              <StepLinksFields
-                form={form}
-                cvFile={cvFile}
-                fieldHasError={fieldHasError}
-                updateField={updateField}
-                onCvFileChange={handleCvFileChange}
+            <div className="flex flex-col gap-4">
+              <WizardSectionHeader
+                step={step}
+                title={section.title}
+                hint={section.hint}
               />
-            )}
 
-            {step === 2 && (
-              <StepRoleFields
-                form={form}
-                fieldHasError={fieldHasError}
-                updateField={updateField}
-                updateArrayField={updateArrayField}
-              />
-            )}
-
-            {step === 3 && (
-              <StepPreferencesFields
-                form={form}
-                updateField={updateField}
-                updateArrayField={updateArrayField}
-              />
-            )}
-
-            <div
-              className={cn(
-                'mt-6 flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:gap-6',
+              {step === 1 && (
+                <StepLinksFields
+                  form={form}
+                  cvFile={cvFile}
+                  fieldHasError={fieldHasError}
+                  updateField={updateField}
+                  onCvFileChange={handleCvFileChange}
+                />
               )}
-            >
+
+              {step === 2 && (
+                <StepRoleFields
+                  form={form}
+                  fieldHasError={fieldHasError}
+                  updateField={updateField}
+                  updateArrayField={updateArrayField}
+                />
+              )}
+
+              {step === 3 && (
+                <StepPreferencesFields
+                  form={form}
+                  updateField={updateField}
+                  updateArrayField={updateArrayField}
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-4 pt-6 lg:flex-row lg:items-center lg:gap-6">
               <button
                 type="submit"
                 disabled={loading}

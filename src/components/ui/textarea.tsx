@@ -16,7 +16,7 @@ export function Textarea({
     return (
       <textarea
         className={cn(
-          'intake-field min-h-[96px] resize-y',
+          'intake-field resize-y',
           hasError && 'intake-field-error',
           className,
         )}

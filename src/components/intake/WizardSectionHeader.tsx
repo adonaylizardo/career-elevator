@@ -10,7 +10,7 @@ export function WizardSectionHeader({
   hint,
 }: WizardSectionHeaderProps) {
   return (
-    <div className="mb-5">
+    <div className="pb-1">
       <div className="flex items-center gap-3">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] bg-field font-display text-[12px] uppercase leading-none text-foreground">
           {step}
