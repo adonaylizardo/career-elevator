@@ -34,15 +34,15 @@ export function Checkout() {
   return (
     <PageLayout>
       <Section className="pt-16 sm:pt-24">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Checkout</h1>
-        <p className="mt-4 text-muted-foreground">
+        <h1 className="font-body text-2xl font-medium sm:text-3xl">Checkout</h1>
+        <p className="text-body-muted mt-4">
           Career Elevator — $49 one-time. After payment, complete the intake
           form so we can build your Opportunity Sheet.
         </p>
 
         <div className="mt-10 space-y-8">
           {/* PayPal */}
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-[24px] border border-border/70 bg-surface p-6 sm:p-8">
             <h2 className="text-lg font-semibold">PayPal</h2>
             {hasPaypal ? (
               <div className="mt-4">
@@ -67,7 +67,7 @@ export function Checkout() {
           </div>
 
           {/* Crypto */}
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-[24px] border border-border/70 bg-surface p-6 sm:p-8">
             <h2 className="text-lg font-semibold">Crypto (USDT)</h2>
             {hasCrypto ? (
               <div className="mt-4 space-y-4">
