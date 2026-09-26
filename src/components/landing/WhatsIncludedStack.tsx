@@ -40,8 +40,14 @@ const CARDS: IncludedCard[] = [
   },
 ]
 
-/** Scroll distance ≈ 3 viewport steps so each card gets a beat. */
-const SCROLL_STEPS_VH = 3.25
+/** Extra scroll length: ~4 solo beats + pack collapse (incredibles-style pacing). */
+const SCROLL_STEPS_VH = 4.75
+
+/** Normalized scroll segments (must sum to 1). */
+const BEAT_1_END = 0.24
+const BEAT_2_END = 0.48
+const BEAT_3_END = 0.72
+const PACK_START = 0.72
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -114,30 +120,87 @@ function useScrollProgress(sectionRef: React.RefObject<HTMLElement | null>) {
   return progress
 }
 
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t
+}
+
+function focusBeat(progress: number) {
+  if (progress < BEAT_1_END) return 0
+  if (progress < BEAT_2_END) return 1
+  if (progress < BEAT_3_END) return 2
+  return 3
+}
+
 function getAnimatedCardStyle(
   index: number,
   progress: number,
   offsets: number[],
+  mobile: boolean,
 ): CSSProperties {
   const count = offsets.length
-  const finalY = offsets[index]
-  const enterStart = index / count
-  const enterEnd = (index + 1) / count
-  const enterT = easeOutCubic(segmentProgress(progress, enterStart, enterEnd))
+  const slideDistance = mobile ? 360 : 480
+  const peekStep = mobile ? 18 : 24
+  const packScaleStep = 0.022
 
-  const entryOffset = index === 0 ? 0 : 140
-  const y =
-    index === 0
-      ? finalY
-      : finalY + (1 - enterT) * entryOffset
+  const beat = focusBeat(progress)
 
-  const packT = easeOutCubic(segmentProgress(progress, 0.55, 1))
-  const scale = 1 - (count - 1 - index) * 0.022 * packT
+  if (progress >= PACK_START) {
+    const packT = easeOutCubic(segmentProgress(progress, PACK_START, 1))
+    const packStartY =
+      index === 0 ? -peekStep * 2 : index === 1 ? -peekStep : 0
+    const packStartScale =
+      index === count - 1 ? 1 : 1 - (count - 1 - index) * 0.018
+    const endY = offsets[index]
+    const endScale = 1 - (count - 1 - index) * packScaleStep
+
+    return {
+      zIndex: index + 1,
+      opacity: 1,
+      transform: `translate3d(0, ${lerp(packStartY, endY, packT)}px, 0) scale(${lerp(packStartScale, endScale, packT)})`,
+      transformOrigin: 'top center',
+      willChange: 'transform, opacity',
+    }
+  }
+
+  const beatStart = index === 0 ? 0 : index === 1 ? BEAT_1_END : BEAT_2_END
+  const enterWindow = mobile ? 0.07 : 0.08
+  const enterT = easeOutCubic(
+    segmentProgress(progress, beatStart, beatStart + enterWindow),
+  )
+
+  if (index > beat) {
+    return {
+      zIndex: index + 1,
+      opacity: 0,
+      pointerEvents: 'none',
+      transform: `translate3d(0, ${slideDistance}px, 0) scale(1)`,
+      transformOrigin: 'top center',
+      willChange: 'transform, opacity',
+    }
+  }
+
+  if (index === beat) {
+    const y = index === 0 ? 0 : lerp(slideDistance, 0, enterT)
+    return {
+      zIndex: 30,
+      opacity: index === 0 ? 1 : enterT,
+      transform: `translate3d(0, ${y}px, 0) scale(1)`,
+      transformOrigin: 'top center',
+      willChange: 'transform, opacity',
+    }
+  }
+
+  const depth = beat - index
+  const settleT = easeOutCubic(
+    segmentProgress(progress, beatStart, beatStart + enterWindow * 0.85),
+  )
+  const behindY = -peekStep * depth * settleT
+  const behindScale = 1 - depth * 0.018 * settleT
 
   return {
-    zIndex: index + 1,
-    opacity: index === 0 ? 1 : enterT,
-    transform: `translate3d(0, ${y}px, 0) scale(${scale})`,
+    zIndex: 10 + index,
+    opacity: 0.92,
+    transform: `translate3d(0, ${behindY}px, 0) scale(${behindScale})`,
     transformOrigin: 'top center',
     willChange: 'transform, opacity',
   }
@@ -203,7 +266,7 @@ function CardStack({
       {CARDS.map((card, index) => {
         const style: CSSProperties = reducedMotion
           ? { top: offsets[index], zIndex: index + 1 }
-          : getAnimatedCardStyle(index, progress, offsets)
+          : getAnimatedCardStyle(index, progress, offsets, mobile)
 
         return (
           <IncludedCard
