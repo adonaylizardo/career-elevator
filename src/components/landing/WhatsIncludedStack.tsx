@@ -40,14 +40,18 @@ const CARDS: IncludedCard[] = [
   },
 ]
 
-/** Extra scroll length: ~4 solo beats + pack collapse (incredibles-style pacing). */
-const SCROLL_STEPS_VH = 4.75
+/** Sticky stage + scroll track (vh). Lower = less dead scroll after the pack. */
+const SCROLL_STEPS_VH = 3.35
 
-/** Normalized scroll segments (must sum to 1). */
+/** Raw scroll fraction at which animation progress reaches 1 (rest is quick exit). */
+const ANIMATION_DONE_FRACTION = 0.78
+
+/** Normalized animation segments (solo beats unchanged). */
 const BEAT_1_END = 0.24
 const BEAT_2_END = 0.48
 const BEAT_3_END = 0.72
 const PACK_START = 0.72
+const PACK_END = 0.86
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -93,7 +97,8 @@ function useScrollProgress(sectionRef: React.RefObject<HTMLElement | null>) {
     }
 
     const scrolled = clamp(-rect.top, 0, scrollable)
-    setProgress(scrolled / scrollable)
+    const raw = scrolled / scrollable
+    setProgress(clamp(raw / ANIMATION_DONE_FRACTION, 0, 1))
   }, [sectionRef])
 
   useEffect(() => {
@@ -145,7 +150,7 @@ function getAnimatedCardStyle(
   const beat = focusBeat(progress)
 
   if (progress >= PACK_START) {
-    const packT = easeOutCubic(segmentProgress(progress, PACK_START, 1))
+    const packT = easeOutCubic(segmentProgress(progress, PACK_START, PACK_END))
     const packStartY =
       index === 0 ? -peekStep * 2 : index === 1 ? -peekStep : 0
     const packStartScale =
