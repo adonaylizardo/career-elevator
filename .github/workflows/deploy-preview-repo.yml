@@ -1,3 +1,4 @@
+# Manual deploy trigger: source 67694f6 (cloud agent build verification)
 name: Deploy preview repo (career-elevator-preview)
 
 on:
