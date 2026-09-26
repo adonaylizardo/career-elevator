@@ -150,6 +150,24 @@ function gridX(index: number, cardWidth: number) {
   return index * (cardWidth + GAP_PX)
 }
 
+/** Left edge visible width for cards sitting behind the active step. */
+const PEEK_EDGE_PX = 26
+const PEEK_STACK_PX = 12
+
+function behindPeekX(depth: number, cardWidth: number) {
+  return -(cardWidth - PEEK_EDGE_PX) - (depth - 1) * PEEK_STACK_PX
+}
+
+function behindOpacity(depth: number) {
+  return clamp(0.72 - depth * 0.2, 0.28, 0.72)
+}
+
+function activeEnterProgress(progress: number, beat: number) {
+  if (beat === 0) return 1
+  const beatStart = beat === 1 ? BEAT_1_END : BEAT_2_END
+  return easeOutCubic(segmentProgress(progress, beatStart, beatStart + 0.08))
+}
+
 function getDesktopStepStyle(
   index: number,
   progress: number,
@@ -202,23 +220,37 @@ function getDesktopStepStyle(
         ? centerX
         : lerp(offRight, centerX, enterT)
     return {
-      zIndex: 20,
+      zIndex: 30,
       opacity: index === 0 ? 1 : enterT,
-      transform: `translate3d(${x}px, 0, 0)`,
+      transform: `translate3d(${x}px, 0, 0) scale(1)`,
       width: cardWidth,
       willChange: 'transform, opacity',
     }
   }
 
   const depth = beat - index
-  const peekX = -Math.min(cardWidth * 0.42 * depth, cardWidth * 0.75)
+  const beatBoundary = beat === 1 ? BEAT_1_END : BEAT_2_END
+  const shoveT = easeOutCubic(
+    segmentProgress(progress, beatBoundary, beatBoundary + 0.045),
+  )
+  const peekX = behindPeekX(depth, cardWidth)
+  const enterPush =
+    index === beat - 1 ? activeEnterProgress(progress, beat) * 32 : 0
+  const x =
+    index === beat - 1 && progress < beatBoundary + 0.06
+      ? lerp(centerX, peekX - enterPush, shoveT)
+      : peekX - enterPush
 
   return {
     zIndex: 10 + index,
-    opacity: 0.88,
-    transform: `translate3d(${peekX}px, 0, 0) scale(0.98)`,
+    opacity:
+      depth >= 2
+        ? 0
+        : behindOpacity(depth) * (index === beat - 1 ? 1 - enterPush / 48 : 1),
+    pointerEvents: 'none',
+    transform: `translate3d(${x}px, 0, 0) scale(${1 - depth * 0.02})`,
     width: cardWidth,
-    willChange: 'transform',
+    willChange: 'transform, opacity',
   }
 }
 
@@ -266,19 +298,33 @@ function getMobileStepStyle(index: number, progress: number): CSSProperties {
     const x =
       index === 0 ? 0 : lerp(offRight, 0, enterT)
     return {
-      zIndex: 20,
+      zIndex: 30,
       opacity: index === 0 ? 1 : enterT,
-      transform: `translate3d(${x}px, 0, 0)`,
+      transform: `translate3d(${x}px, 0, 0) scale(1)`,
       willChange: 'transform, opacity',
     }
   }
 
-  const peekX = -12 * (beat - index)
+  const depth = beat - index
+  const beatBoundary = beat === 1 ? BEAT_1_END : BEAT_2_END
+  const shoveT = easeOutCubic(
+    segmentProgress(progress, beatBoundary, beatBoundary + 0.045),
+  )
+  const peekPx = PEEK_EDGE_PX + (depth - 1) * PEEK_STACK_PX
+  const offLeft = -(320 - peekPx)
+  const enterPush =
+    index === beat - 1 ? activeEnterProgress(progress, beat) * 16 : 0
+  const x =
+    index === beat - 1 && progress < beatBoundary + 0.06
+      ? lerp(0, offLeft - enterPush, shoveT)
+      : offLeft - enterPush
+
   return {
     zIndex: 10 + index,
-    opacity: 0.85,
-    transform: `translate3d(${peekX}px, 0, 0) scale(0.98)`,
-    willChange: 'transform',
+    opacity: depth >= 2 ? 0 : behindOpacity(depth) * (1 - shoveT * 0.35),
+    pointerEvents: 'none',
+    transform: `translate3d(${x}px, 0, 0) scale(${1 - depth * 0.02})`,
+    willChange: 'transform, opacity',
   }
 }
 
@@ -338,7 +384,7 @@ function HowItWorksTrack({
       </div>
       <div
         className="relative overflow-hidden lg:hidden"
-        style={{ height: progress >= SETTLE_END ? 692 : 240 }}
+        style={{ height: progress >= SETTLE_END ? 692 : 260 }}
       >
         {STEPS.map((step, index) => (
           <StepCard
@@ -366,7 +412,7 @@ export function HowItWorksScroll() {
     <section
       id="how-it-works"
       ref={sectionRef}
-      className="relative bg-background"
+      className="relative scroll-mt-[88px] bg-background lg:scroll-mt-24"
       style={{ minHeight: scrollHeight }}
     >
       <div className="sticky top-0 px-5 py-12 lg:px-[120px] lg:py-[96px]">
