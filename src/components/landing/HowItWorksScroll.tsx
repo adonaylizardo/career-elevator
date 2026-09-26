@@ -35,6 +35,8 @@ const SETTLE_START = 0.72
 const SETTLE_END = 0.86
 
 const GAP_PX = 24
+const PEEK_EDGE_PX = 28
+const FOCUS_CARD_WIDTH = 400
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -44,21 +46,8 @@ function easeOutCubic(t: number) {
   return 1 - (1 - t) ** 3
 }
 
-function segmentProgress(progress: number, start: number, end: number) {
-  if (progress <= start) return 0
-  if (progress >= end) return 1
-  return (progress - start) / (end - start)
-}
-
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
-}
-
-function focusBeat(progress: number) {
-  if (progress < BEAT_1_END) return 0
-  if (progress < BEAT_2_END) return 1
-  if (progress < BEAT_3_END) return 2
-  return 3
 }
 
 function usePrefersReducedMotion() {
@@ -118,6 +107,204 @@ function useScrollProgress(sectionRef: React.RefObject<HTMLElement | null>) {
   return progress
 }
 
+/** Which keyframe pair to interpolate and local t ∈ [0,1]. */
+function beatSegment(progress: number) {
+  if (progress < BEAT_1_END) {
+    return { from: 0, to: 1, t: progress / BEAT_1_END }
+  }
+  if (progress < BEAT_2_END) {
+    return {
+      from: 1,
+      to: 2,
+      t: (progress - BEAT_1_END) / (BEAT_2_END - BEAT_1_END),
+    }
+  }
+  if (progress < SETTLE_START) {
+    return {
+      from: 2,
+      to: 3,
+      t: (progress - BEAT_2_END) / (BEAT_3_END - BEAT_2_END),
+    }
+  }
+  if (progress < SETTLE_END) {
+    return {
+      from: 3,
+      to: 4,
+      t: (progress - SETTLE_START) / (SETTLE_END - SETTLE_START),
+    }
+  }
+  return { from: 4, to: 4, t: 1 }
+}
+
+type DesktopLayout = {
+  trackWidth: number
+  focusWidth: number
+  settleWidth: number
+  focusX: number
+  offRight: number
+  peekX: number
+  hiddenX: number
+  gridX: (index: number) => number
+}
+
+function getDesktopLayout(trackWidth: number): DesktopLayout {
+  const settleWidth = (trackWidth - GAP_PX * (STEPS.length - 1)) / STEPS.length
+  const focusWidth = clamp(
+    FOCUS_CARD_WIDTH,
+    360,
+    Math.min(420, trackWidth - 40),
+  )
+  const focusX = (trackWidth - focusWidth) / 2
+  const offRight = trackWidth + 72
+  const peekX = -(focusWidth - PEEK_EDGE_PX)
+  const hiddenX = -(focusWidth + 12)
+
+  return {
+    trackWidth,
+    focusWidth,
+    settleWidth,
+    focusX,
+    offRight,
+    peekX,
+    hiddenX,
+    gridX: (index) => index * (settleWidth + GAP_PX),
+  }
+}
+
+function desktopKeyframeX(index: number, frame: number, L: DesktopLayout) {
+  const { offRight, focusX, peekX, hiddenX, gridX } = L
+  const table: number[][] = [
+    [offRight, focusX, peekX, hiddenX, gridX(0)],
+    [offRight, offRight, focusX, peekX, gridX(1)],
+    [offRight, offRight, offRight, focusX, gridX(2)],
+  ]
+  return table[index][frame]
+}
+
+function desktopKeyframeWidth(frame: number, L: DesktopLayout) {
+  if (frame >= 4) return L.settleWidth
+  return L.focusWidth
+}
+
+function desktopKeyframeOpacity(index: number, frame: number) {
+  const table: number[][] = [
+    [1, 1, 0.9, 0, 1],
+    [0, 0, 1, 0.88, 1],
+    [0, 0, 0, 1, 1],
+  ]
+  return table[index][frame]
+}
+
+function getDesktopStepStyle(
+  index: number,
+  progress: number,
+  layout: DesktopLayout,
+): CSSProperties {
+  const seg = beatSegment(progress)
+  const t = easeOutCubic(seg.t)
+
+  const x = lerp(
+    desktopKeyframeX(index, seg.from, layout),
+    desktopKeyframeX(index, seg.to, layout),
+    t,
+  )
+  const width = lerp(
+    desktopKeyframeWidth(seg.from, layout),
+    desktopKeyframeWidth(seg.to, layout),
+    t,
+  )
+  const opacity = lerp(
+    desktopKeyframeOpacity(index, seg.from),
+    desktopKeyframeOpacity(index, seg.to),
+    t,
+  )
+
+  const zIndex =
+    progress >= SETTLE_START
+      ? index + 1
+      : 12 + index + (index === seg.to - 1 ? 10 : 0)
+
+  return {
+    zIndex,
+    opacity,
+    width,
+    pointerEvents: opacity < 0.15 ? 'none' : undefined,
+    transform: `translate3d(${x}px, 0, 0)`,
+    willChange: 'transform, opacity, width',
+  }
+}
+
+type MobileLayout = {
+  trackWidth: number
+  offRight: number
+  peekX: number
+  hiddenX: number
+  cardHeight: number
+}
+
+function getMobileLayout(trackWidth: number): MobileLayout {
+  return {
+    trackWidth,
+    offRight: trackWidth + 48,
+    peekX: -(trackWidth - PEEK_EDGE_PX),
+    hiddenX: -(trackWidth + 16),
+    cardHeight: 228,
+  }
+}
+
+function mobileKeyframeX(index: number, frame: number, L: MobileLayout) {
+  const { offRight, peekX, hiddenX } = L
+  const table: number[][] = [
+    [offRight, 0, peekX, hiddenX, 0],
+    [offRight, offRight, 0, peekX, 0],
+    [offRight, offRight, offRight, 0, 0],
+  ]
+  return table[index][frame]
+}
+
+function mobileKeyframeY(index: number, frame: number, L: MobileLayout) {
+  const stackGap = 16
+  if (frame < 4) return 0
+  return index * (L.cardHeight + stackGap)
+}
+
+function mobileKeyframeOpacity(index: number, frame: number) {
+  return desktopKeyframeOpacity(index, frame)
+}
+
+function getMobileStepStyle(
+  index: number,
+  progress: number,
+  layout: MobileLayout,
+): CSSProperties {
+  const seg = beatSegment(progress)
+  const t = easeOutCubic(seg.t)
+
+  const x = lerp(
+    mobileKeyframeX(index, seg.from, layout),
+    mobileKeyframeX(index, seg.to, layout),
+    t,
+  )
+  const y = lerp(
+    mobileKeyframeY(index, seg.from, layout),
+    mobileKeyframeY(index, seg.to, layout),
+    t,
+  )
+  const opacity = lerp(
+    mobileKeyframeOpacity(index, seg.from),
+    mobileKeyframeOpacity(index, seg.to),
+    t,
+  )
+
+  return {
+    zIndex: 12 + index + (index === seg.to - 1 ? 10 : 0),
+    opacity,
+    pointerEvents: opacity < 0.15 ? 'none' : undefined,
+    transform: `translate3d(${x}px, ${y}px, 0)`,
+    willChange: 'transform, opacity',
+  }
+}
+
 function StepCard({
   step,
   className,
@@ -146,188 +333,6 @@ function StepCard({
   )
 }
 
-function gridX(index: number, cardWidth: number) {
-  return index * (cardWidth + GAP_PX)
-}
-
-/** Left edge visible width for cards sitting behind the active step. */
-const PEEK_EDGE_PX = 26
-const PEEK_STACK_PX = 12
-
-function behindPeekX(depth: number, cardWidth: number) {
-  return -(cardWidth - PEEK_EDGE_PX) - (depth - 1) * PEEK_STACK_PX
-}
-
-function behindOpacity(depth: number) {
-  return clamp(0.72 - depth * 0.2, 0.28, 0.72)
-}
-
-function activeEnterProgress(progress: number, beat: number) {
-  if (beat === 0) return 1
-  const beatStart = beat === 1 ? BEAT_1_END : BEAT_2_END
-  return easeOutCubic(segmentProgress(progress, beatStart, beatStart + 0.08))
-}
-
-function getDesktopStepStyle(
-  index: number,
-  progress: number,
-  cardWidth: number,
-  trackWidth: number,
-): CSSProperties {
-  const beat = focusBeat(progress)
-  const centerX = (trackWidth - cardWidth) / 2
-  const offRight = trackWidth + 48
-  const enterWindow = 0.08
-
-  const settleT = easeOutCubic(
-    segmentProgress(progress, SETTLE_START, SETTLE_END),
-  )
-
-  if (progress >= SETTLE_START) {
-    const startX =
-      index === 2 ? centerX : gridX(index, cardWidth)
-    const endX = gridX(index, cardWidth)
-    const x = index === 2 ? lerp(startX, endX, settleT) : endX
-    return {
-      zIndex: index + 1,
-      opacity: 1,
-      transform: `translate3d(${x}px, 0, 0)`,
-      width: cardWidth,
-      willChange: 'transform',
-    }
-  }
-
-  const beatStart =
-    index === 0 ? 0 : index === 1 ? BEAT_1_END : BEAT_2_END
-  const enterT = easeOutCubic(
-    segmentProgress(progress, beatStart, beatStart + enterWindow),
-  )
-
-  if (index > beat) {
-    return {
-      zIndex: index + 1,
-      opacity: 0,
-      pointerEvents: 'none',
-      transform: `translate3d(${offRight}px, 0, 0)`,
-      width: cardWidth,
-      willChange: 'transform, opacity',
-    }
-  }
-
-  if (index === beat) {
-    const x =
-      index === 0
-        ? centerX
-        : lerp(offRight, centerX, enterT)
-    return {
-      zIndex: 30,
-      opacity: index === 0 ? 1 : enterT,
-      transform: `translate3d(${x}px, 0, 0) scale(1)`,
-      width: cardWidth,
-      willChange: 'transform, opacity',
-    }
-  }
-
-  const depth = beat - index
-  const beatBoundary = beat === 1 ? BEAT_1_END : BEAT_2_END
-  const shoveT = easeOutCubic(
-    segmentProgress(progress, beatBoundary, beatBoundary + 0.045),
-  )
-  const peekX = behindPeekX(depth, cardWidth)
-  const enterPush =
-    index === beat - 1 ? activeEnterProgress(progress, beat) * 32 : 0
-  const x =
-    index === beat - 1 && progress < beatBoundary + 0.06
-      ? lerp(centerX, peekX - enterPush, shoveT)
-      : peekX - enterPush
-
-  return {
-    zIndex: 10 + index,
-    opacity:
-      depth >= 2
-        ? 0
-        : behindOpacity(depth) * (index === beat - 1 ? 1 - enterPush / 48 : 1),
-    pointerEvents: 'none',
-    transform: `translate3d(${x}px, 0, 0) scale(${1 - depth * 0.02})`,
-    width: cardWidth,
-    willChange: 'transform, opacity',
-  }
-}
-
-function getMobileStepStyle(index: number, progress: number): CSSProperties {
-  const beat = focusBeat(progress)
-  const cardHeight = 220
-  const stackGap = 16
-  const offRight = 340
-  const enterWindow = 0.08
-
-  const settleT = easeOutCubic(
-    segmentProgress(progress, SETTLE_START, SETTLE_END),
-  )
-
-  if (progress >= SETTLE_START) {
-    const stackY = index * (cardHeight + stackGap)
-    const soloY = 0
-    const y = lerp(soloY, stackY, settleT)
-    const x = lerp(0, 0, settleT)
-    return {
-      zIndex: index + 1,
-      opacity: 1,
-      transform: `translate3d(${x}px, ${y}px, 0)`,
-      willChange: 'transform',
-    }
-  }
-
-  const beatStart =
-    index === 0 ? 0 : index === 1 ? BEAT_1_END : BEAT_2_END
-  const enterT = easeOutCubic(
-    segmentProgress(progress, beatStart, beatStart + enterWindow),
-  )
-
-  if (index > beat) {
-    return {
-      zIndex: index + 1,
-      opacity: 0,
-      pointerEvents: 'none',
-      transform: `translate3d(${offRight}px, 0, 0)`,
-      willChange: 'transform, opacity',
-    }
-  }
-
-  if (index === beat) {
-    const x =
-      index === 0 ? 0 : lerp(offRight, 0, enterT)
-    return {
-      zIndex: 30,
-      opacity: index === 0 ? 1 : enterT,
-      transform: `translate3d(${x}px, 0, 0) scale(1)`,
-      willChange: 'transform, opacity',
-    }
-  }
-
-  const depth = beat - index
-  const beatBoundary = beat === 1 ? BEAT_1_END : BEAT_2_END
-  const shoveT = easeOutCubic(
-    segmentProgress(progress, beatBoundary, beatBoundary + 0.045),
-  )
-  const peekPx = PEEK_EDGE_PX + (depth - 1) * PEEK_STACK_PX
-  const offLeft = -(320 - peekPx)
-  const enterPush =
-    index === beat - 1 ? activeEnterProgress(progress, beat) * 16 : 0
-  const x =
-    index === beat - 1 && progress < beatBoundary + 0.06
-      ? lerp(0, offLeft - enterPush, shoveT)
-      : offLeft - enterPush
-
-  return {
-    zIndex: 10 + index,
-    opacity: depth >= 2 ? 0 : behindOpacity(depth) * (1 - shoveT * 0.35),
-    pointerEvents: 'none',
-    transform: `translate3d(${x}px, 0, 0) scale(${1 - depth * 0.02})`,
-    willChange: 'transform, opacity',
-  }
-}
-
 function HowItWorksTrack({
   progress,
   reducedMotion,
@@ -336,20 +341,32 @@ function HowItWorksTrack({
   reducedMotion: boolean
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const [metrics, setMetrics] = useState({ trackWidth: 1200, cardWidth: 384 })
+  const mobileTrackRef = useRef<HTMLDivElement>(null)
+  const [desktopLayout, setDesktopLayout] = useState(() =>
+    getDesktopLayout(1200),
+  )
+  const [mobileLayout, setMobileLayout] = useState(() =>
+    getMobileLayout(335),
+  )
 
   useLayoutEffect(() => {
     const measure = () => {
-      const track = trackRef.current
-      if (!track) return
-      const trackWidth = track.clientWidth
-      const cardWidth = (trackWidth - GAP_PX * (STEPS.length - 1)) / STEPS.length
-      setMetrics({ trackWidth, cardWidth })
+      if (trackRef.current) {
+        setDesktopLayout(getDesktopLayout(trackRef.current.clientWidth))
+      }
+      if (mobileTrackRef.current) {
+        setMobileLayout(getMobileLayout(mobileTrackRef.current.clientWidth))
+      }
     }
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
   }, [])
+
+  const mobileStageHeight =
+    progress >= SETTLE_END
+      ? mobileLayout.cardHeight * 3 + 32
+      : mobileLayout.cardHeight + 24
 
   if (reducedMotion) {
     return (
@@ -366,32 +383,28 @@ function HowItWorksTrack({
       <div
         ref={trackRef}
         className="relative hidden overflow-hidden lg:block"
-        style={{ height: 300 }}
+        style={{ height: 320 }}
       >
         {STEPS.map((step, index) => (
           <StepCard
             key={step.step}
             step={step}
-            className="absolute left-0 top-0"
-            style={getDesktopStepStyle(
-              index,
-              progress,
-              metrics.cardWidth,
-              metrics.trackWidth,
-            )}
+            className="absolute left-0 top-0 shrink-0"
+            style={getDesktopStepStyle(index, progress, desktopLayout)}
           />
         ))}
       </div>
       <div
+        ref={mobileTrackRef}
         className="relative overflow-hidden lg:hidden"
-        style={{ height: progress >= SETTLE_END ? 692 : 260 }}
+        style={{ height: mobileStageHeight }}
       >
         {STEPS.map((step, index) => (
           <StepCard
             key={step.step}
             step={step}
-            className="absolute left-0 top-0 w-full"
-            style={getMobileStepStyle(index, progress)}
+            className="absolute left-0 top-0 w-full shrink-0"
+            style={getMobileStepStyle(index, progress, mobileLayout)}
           />
         ))}
       </div>
@@ -412,11 +425,11 @@ export function HowItWorksScroll() {
     <section
       id="how-it-works"
       ref={sectionRef}
-      className="relative scroll-mt-[88px] bg-background lg:scroll-mt-24"
+      className="relative overflow-x-clip bg-background scroll-mt-32 lg:scroll-mt-28"
       style={{ minHeight: scrollHeight }}
     >
-      <div className="sticky top-0 px-5 py-12 lg:px-[120px] lg:py-[96px]">
-        <div className="mx-auto max-w-[1200px]">
+      <div className="sticky top-[4.5rem] px-5 pb-12 pt-6 lg:top-20 lg:px-[120px] lg:py-[96px]">
+        <div className="mx-auto max-w-[1200px] overflow-x-clip">
           <h2 className="text-section-title mb-10">How it works</h2>
           <HowItWorksTrack progress={progress} reducedMotion={reducedMotion} />
         </div>
