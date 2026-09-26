@@ -1,0 +1,83 @@
+name: Deploy preview repo (career-elevator-preview)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - cursor/whats-included-scroll-stack-533a
+    paths:
+      - '.github/workflows/deploy-preview-repo.yml'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-preview-repo
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: pr-preview
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for preview Pages host
+        run: npm run build
+        env:
+          VITE_BASE: /career-elevator-preview/
+
+      - name: Add SPA fallback
+        run: cp dist/index.html dist/404.html
+
+      - name: Deploy static build to adonaylizardo/career-elevator-preview (main)
+        env:
+          PREVIEW_TOKEN: ${{ secrets.CAREER_ELEVATOR_PREVIEW_DEPLOY_TOKEN }}
+          PREVIEW_TOKEN_ALT: ${{ secrets.PREVIEW_REPO_TOKEN }}
+        run: |
+          TOKEN="${PREVIEW_TOKEN:-$PREVIEW_TOKEN_ALT}"
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Missing preview deploy token. Add CAREER_ELEVATOR_PREVIEW_DEPLOY_TOKEN (or PREVIEW_REPO_TOKEN) to the pr-preview environment."
+            exit 1
+          fi
+          PREVIEW_TOKEN="$TOKEN"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          workdir=$(mktemp -d)
+          git clone "https://x-access-token:${TOKEN}@github.com/adonaylizardo/career-elevator-preview.git" "$workdir"
+          cd "$workdir"
+          git checkout main
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a "$GITHUB_WORKSPACE/dist/." .
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to deploy."
+            exit 0
+          fi
+          commit_msg=$'Deploy What\'s included scroll stack from '"${GITHUB_SHA}"$'\n\nSource: adonaylizardo/career-elevator@'"${GITHUB_REF_NAME}"$'\nVITE_BASE=/career-elevator-preview/'
+          git commit -m "$commit_msg"
+          git push origin main
