@@ -79,8 +79,6 @@ jobs:
             echo "No changes to deploy."
             exit 0
           fi
-          git commit -m "Deploy What's included scroll stack from ${GITHUB_SHA}
-
-Source: adonaylizardo/career-elevator@${GITHUB_REF_NAME}
-VITE_BASE=/career-elevator-preview/"
+          commit_msg=$'Deploy What\'s included scroll stack from '"${GITHUB_SHA}"$'\n\nSource: adonaylizardo/career-elevator@'"${GITHUB_REF_NAME}"$'\nVITE_BASE=/career-elevator-preview/'
+          git commit -m "$commit_msg"
           git push origin main
