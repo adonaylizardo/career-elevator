@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FaqAccordion } from '../components/landing/FaqAccordion'
+import { HowItWorksScroll } from '../components/landing/HowItWorksScroll'
 import { WhatsIncludedStack } from '../components/landing/WhatsIncludedStack'
 import { CtaButton } from '../components/layout/CtaButton'
 import { PageLayout } from '../components/layout/PageLayout'
@@ -47,24 +48,6 @@ const WHO_FOR_ITEMS = [
   'People who have a CV and a portfolio already, and need direction on where to point them',
   'Designers who know roughly what they want next but not where it exists',
   'Anyone spending more time searching than applying',
-]
-
-const HOW_IT_WORKS = [
-  {
-    step: '1',
-    title: 'You pay and complete the intake.',
-    body: "A short form: your CV, your portfolio link, what you're looking for, and what you'd rather avoid. It takes about 15 minutes to fill out properly.",
-  },
-  {
-    step: '2',
-    title: 'I build your Opportunity Sheet.',
-    body: 'Manual research against your actual profile and goals — not a keyword filter or an automated feed.',
-  },
-  {
-    step: '3',
-    title: 'You get it in 3–5 days.',
-    body: "Counted from a complete intake. If something in your intake is unclear, I'll ask before I start, and the clock starts once we're aligned.",
-  },
 ]
 
 const NOT_INCLUDED = [
@@ -176,31 +159,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section
-        id="how-it-works"
-        className="bg-background px-5 py-12 lg:px-[120px] lg:py-[96px]"
-      >
-        <div className="mx-auto max-w-[1200px]">
-          <h2 className="text-section-title mb-10">How it works</h2>
-          <div className="grid gap-6 lg:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
-              <article
-                key={item.step}
-                className="rounded-[20px] border border-border bg-card p-7"
-              >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-badge font-mono text-[12px] font-medium tracking-[0.8px] text-white">
-                  {item.step}
-                </span>
-                <h3 className="text-section-title mt-5 text-[28px] leading-[0.95] tracking-[-0.5px] lg:text-[40px] lg:leading-[0.9] lg:tracking-[-0.8px]">
-                  {item.title}
-                </h3>
-                <p className="text-body-muted mt-4">{item.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HowItWorksScroll />
 
       {/* What's not included */}
       <section className="bg-card px-5 py-12 lg:px-[120px] lg:py-[96px]">
