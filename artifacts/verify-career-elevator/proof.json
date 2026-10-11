@@ -1,0 +1,69 @@
+{
+  "baseUrl": "http://127.0.0.1:4173/career-elevator",
+  "capturedAt": "2026-10-10T19:48:05.242Z",
+  "paypalExpected": "https://paypal.me/adolizardo/49",
+  "paypalHref": {
+    "desktop-1280": "https://paypal.me/adolizardo/49",
+    "mobile-375": "https://paypal.me/adolizardo/49"
+  },
+  "pages": [
+    {
+      "viewport": "desktop-1280",
+      "route": "/",
+      "file": "desktop-1280-landing.png"
+    },
+    {
+      "viewport": "desktop-1280",
+      "route": "/checkout",
+      "file": "desktop-1280-checkout.png",
+      "paypalHref": "https://paypal.me/adolizardo/49"
+    },
+    {
+      "viewport": "desktop-1280",
+      "route": "/intake",
+      "step": 1,
+      "file": "desktop-1280-intake-step-1.png"
+    },
+    {
+      "viewport": "desktop-1280",
+      "route": "/intake",
+      "step": 2,
+      "file": "desktop-1280-intake-step-2.png"
+    },
+    {
+      "viewport": "desktop-1280",
+      "route": "/intake",
+      "step": 3,
+      "file": "desktop-1280-intake-step-3.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "route": "/",
+      "file": "mobile-375-landing.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "route": "/checkout",
+      "file": "mobile-375-checkout.png",
+      "paypalHref": "https://paypal.me/adolizardo/49"
+    },
+    {
+      "viewport": "mobile-375",
+      "route": "/intake",
+      "step": 1,
+      "file": "mobile-375-intake-step-1.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "route": "/intake",
+      "step": 2,
+      "file": "mobile-375-intake-step-2.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "route": "/intake",
+      "step": 3,
+      "file": "mobile-375-intake-step-3.png"
+    }
+  ]
+}
